@@ -47,6 +47,3 @@ prisma/dev.db
 # OS
 Thumbs.db
 
-# Logs
-logs
-*.log
