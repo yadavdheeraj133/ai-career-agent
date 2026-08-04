@@ -13,4 +13,51 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  resume Resume?
+}
+
+model Resume {
+  id               String   @id @default(cuid())
+  title            String
+  summary          String?
+
+  experience       Json?
+  education        Json?
+  skills           Json?
+  projects         Json?
+  certifications   Json?
+  achievements     Json?
+  languages        Json?
+  links            Json?
+
+  template         String   @default("modern")
+  isDefault        Boolean  @default(true)
+
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+
+model Job {
+  id          String   @id @default(cuid())
+
+  title       String
+  company     String
+  location    String
+
+  workMode    String   // Remote | Hybrid | Onsite
+  jobType     String   // Full-time | Part-time | Internship | Contract | Freelance
+
+  experience  String?
+  salary      String?
+  description String?
+
+  source      String   // LinkedIn, Wellfound, etc.
+  url         String   @unique
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
