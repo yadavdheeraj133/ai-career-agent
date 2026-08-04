@@ -6,9 +6,15 @@ import { z } from "zod";
  * ------------------------------------------------------------
  */
 
-export const ResumeSectionScoreSchema = z.object({
-  score: z.number().min(0).max(100),
-  feedback: z.string(),
+export const StrengthSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+export const WeaknessSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  improvement: z.string(),
 });
 
 export const ResumeAnalysisSchema = z.object({
@@ -16,35 +22,35 @@ export const ResumeAnalysisSchema = z.object({
 
   summary: z.string(),
 
-  strengths: z.array(z.string()),
+  strengths: z.array(StrengthSchema),
 
-  weaknesses: z.array(z.string()),
+  weaknesses: z.array(WeaknessSchema),
+
+  sectionScores: z.object({
+    title: z.number().min(0).max(100),
+
+    summary: z.number().min(0).max(100),
+
+    experience: z.number().min(0).max(100),
+
+    projects: z.number().min(0).max(100),
+
+    skills: z.number().min(0).max(100),
+
+    education: z.number().min(0).max(100),
+
+    certifications: z.number().min(0).max(100),
+
+    achievements: z.number().min(0).max(100),
+
+    languages: z.number().min(0).max(100),
+
+    links: z.number().min(0).max(100),
+
+    formatting: z.number().min(0).max(100),
+  }),
 
   recommendations: z.array(z.string()),
-
-  sections: z.object({
-    title: ResumeSectionScoreSchema,
-
-    summary: ResumeSectionScoreSchema,
-
-    experience: ResumeSectionScoreSchema,
-
-    projects: ResumeSectionScoreSchema,
-
-    skills: ResumeSectionScoreSchema,
-
-    education: ResumeSectionScoreSchema,
-
-    certifications: ResumeSectionScoreSchema,
-
-    achievements: ResumeSectionScoreSchema,
-
-    languages: ResumeSectionScoreSchema,
-
-    links: ResumeSectionScoreSchema,
-
-    formatting: ResumeSectionScoreSchema,
-  }),
 });
 
 export type ResumeAnalysis = z.infer<
