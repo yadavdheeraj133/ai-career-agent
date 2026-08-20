@@ -3,19 +3,33 @@ import { z } from "zod";
 export const CompanyInsightSchema = z.object({
   companyName: z.string(),
 
-  overview: z.string(),
-
   industry: z.string(),
 
-  techStack: z.array(z.string()),
+  overview: z.string(),
 
-  companyCulture: z.array(z.string()),
+  mission: z.string(),
 
-  interviewProcess: z.array(z.string()),
+  vision: z.string(),
 
-  strengths: z.array(z.string()),
+  products: z.array(z.string()),
 
-  challenges: z.array(z.string()),
+  services: z.array(z.string()),
+
+  technologies: z.array(z.string()),
+
+  culture: z.array(z.string()),
+
+  values: z.array(z.string()),
+
+  benefits: z.array(z.string()),
+
+  hiringFocus: z.array(z.string()),
+
+  recentNews: z.array(z.string()),
+
+  candidateTalkingPoints: z.array(z.string()),
+
+  summary: z.string(),
 });
 
 export type CompanyInsight = z.infer<

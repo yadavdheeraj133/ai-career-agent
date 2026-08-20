@@ -73,11 +73,46 @@ Return EXACTLY this JSON schema:
 
 {
   "overallSkillMatch": 0,
-  "existingSkills": [],
-  "missingSkills": [],
-  "criticalSkills": [],
-  "niceToHaveSkills": [],
-  "strengths": [],
+
+  "existingSkills": [
+    {
+      "skill": "",
+      "priority": "High",
+      "reason": ""
+    }
+  ],
+
+  "missingSkills": [
+    {
+      "skill": "",
+      "priority": "High",
+      "reason": ""
+    }
+  ],
+
+  "criticalSkills": [
+    {
+      "skill": "",
+      "priority": "High",
+      "reason": ""
+    }
+  ],
+
+  "niceToHaveSkills": [
+    {
+      "skill": "",
+      "priority": "Low",
+      "reason": ""
+    }
+  ],
+
+  "strengths": [
+    {
+      "strength": "",
+      "reason": ""
+    }
+  ],
+
   "learningPriorities": [
     {
       "skill": "",
@@ -85,7 +120,14 @@ Return EXACTLY this JSON schema:
       "reason": ""
     }
   ],
-  "recommendations": []
+
+  "recommendations": [
+    {
+      "skill": "",
+      "priority": "High",
+      "reason": ""
+    }
+  ]
 }
 `;
 

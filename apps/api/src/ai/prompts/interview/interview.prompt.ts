@@ -36,32 +36,56 @@ Rules:
 
 3. Never exaggerate qualifications.
 
-4. Generate realistic interview questions based on:
-- Job description
-- Candidate's resume
+4. Generate realistic interview questions based ONLY on:
+- The job description
+- The candidate's resume
 
 5. Questions should cover:
-- Resume
 - Technical skills
+- Behavioral topics
 - Projects
-- Behavioral
+- Resume
 - Problem solving
 - Role-specific knowledge
 
-6. For each question provide:
+6. For every question provide:
 - Why it may be asked
-- A sample answer using ONLY resume information
+- A sample answer using ONLY information from the resume
 - Follow-up questions
 
-7. Identify weak areas where the candidate should prepare more.
+7. Sample answers must NEVER contain information that is not present
+in the resume.
 
-8. Suggest preparation tips.
+8. If the resume does not contain enough information to provide a
+specific answer, clearly state that the candidate should answer based
+on their actual experience. Do not invent an answer.
 
-9. Return ONLY valid JSON.
+9. Keep the output concise and practical.
 
-10. Never return markdown.
+10. Generate EXACTLY:
+- 5 technical questions
+- 3 behavioral questions
+- 3 project questions
+- 3 resume questions
 
-11. Never return explanations outside JSON.
+11. Each question must contain:
+- A concise reason
+- A sample answer between 40 and 80 words
+- Maximum 2 follow-up questions
+
+12. Keep weakAreas to a maximum of 5 items.
+
+13. Keep preparationTips to a maximum of 5 items.
+
+14. Avoid repetitive questions.
+
+15. Avoid unnecessary explanations.
+
+16. Return ONLY valid JSON.
+
+17. Never return markdown.
+
+18. Never return explanations outside JSON.
 
 Return EXACTLY this JSON schema:
 
@@ -69,6 +93,7 @@ Return EXACTLY this JSON schema:
   "overview": "",
   "interviewDifficulty": "",
   "keyFocusAreas": [],
+
   "technicalQuestions": [
     {
       "question": "",
@@ -77,6 +102,7 @@ Return EXACTLY this JSON schema:
       "followUpQuestions": []
     }
   ],
+
   "behavioralQuestions": [
     {
       "question": "",
@@ -85,6 +111,7 @@ Return EXACTLY this JSON schema:
       "followUpQuestions": []
     }
   ],
+
   "projectQuestions": [
     {
       "question": "",
@@ -93,6 +120,7 @@ Return EXACTLY this JSON schema:
       "followUpQuestions": []
     }
   ],
+
   "resumeQuestions": [
     {
       "question": "",
@@ -101,8 +129,11 @@ Return EXACTLY this JSON schema:
       "followUpQuestions": []
     }
   ],
+
   "weakAreas": [],
+
   "preparationTips": [],
+
   "finalAdvice": ""
 }
 `;
@@ -124,24 +155,32 @@ Tasks:
 
 2. Read the complete job description.
 
-3. Predict realistic interview questions.
+3. Identify the most important skills and requirements from the job
+description.
 
-4. Include:
-- Technical questions
-- Behavioral questions
-- Resume-based questions
-- Project-based questions
+4. Compare those requirements with the candidate's actual resume.
 
-5. For every question provide:
-- Why it is asked
-- A strong sample answer
-- Follow-up questions
+5. Generate exactly:
+- 5 technical questions
+- 3 behavioral questions
+- 3 project questions
+- 3 resume questions
 
-6. Identify weak areas.
+6. For every question provide:
+- Why the interviewer may ask it
+- A realistic sample answer using ONLY the resume
+- Maximum 2 follow-up questions
 
-7. Give practical preparation tips.
+7. Identify the candidate's weak preparation areas.
 
-8. Return ONLY valid JSON matching the required schema.
+8. Provide practical preparation tips.
+
+9. Keep the response concise.
+
+10. Do not invent experience, skills, projects, achievements,
+certifications, technologies, responsibilities, or results.
+
+11. Return ONLY valid JSON matching the required schema.
 
 Resume:
 

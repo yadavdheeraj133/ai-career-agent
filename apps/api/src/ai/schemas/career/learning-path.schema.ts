@@ -1,33 +1,33 @@
 import { z } from "zod";
 
-export const LearningResourceSchema = z.object({
+export const LearningStageSchema = z.object({
   title: z.string(),
 
-  type: z.enum([
-    "Course",
-    "Book",
-    "Video",
-    "Documentation",
-    "Project",
-  ]),
+  description: z.string(),
 
-  url: z.string().optional(),
+  topics: z.array(z.string()),
 
-  duration: z.string(),
+  difficulty: z.string(),
+
+  estimatedTime: z.string(),
+
+  practice: z.array(z.string()),
+
+  recommendedProjects: z.array(z.string()),
 });
 
 export const LearningPathSchema = z.object({
-  targetRole: z.string(),
+  careerGoal: z.string(),
 
-  currentLevel: z.string(),
+  estimatedDuration: z.string(),
 
-  estimatedCompletionTime: z.string(),
+  learningPath: z.array(LearningStageSchema),
 
-  skillsToLearn: z.array(z.string()),
+  recommendedResources: z.array(z.string()),
 
-  resources: z.array(LearningResourceSchema),
+  studyTips: z.array(z.string()),
 
-  projects: z.array(z.string()),
+  finalAdvice: z.string(),
 });
 
 export type LearningPath = z.infer<

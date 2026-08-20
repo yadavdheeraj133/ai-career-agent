@@ -3,23 +3,29 @@ import { z } from "zod";
 export const RoadmapStepSchema = z.object({
   title: z.string(),
 
-  description: z.string(),
+  objective: z.string(),
 
-  estimatedDuration: z.string(),
+  skills: z.array(z.string()),
 
-  resources: z.array(z.string()),
+  projects: z.array(z.string()),
 
-  completed: z.boolean().default(false),
+  certifications: z.array(z.string()),
+
+  expectedOutcome: z.string(),
 });
 
 export const CareerRoadmapSchema = z.object({
-  goal: z.string(),
-
   currentLevel: z.string(),
 
-  estimatedCompletionTime: z.string(),
+  targetRole: z.string(),
+
+  estimatedTimeline: z.string(),
 
   roadmap: z.array(RoadmapStepSchema),
+
+  successTips: z.array(z.string()),
+
+  finalAdvice: z.string(),
 });
 
 export type CareerRoadmap = z.infer<

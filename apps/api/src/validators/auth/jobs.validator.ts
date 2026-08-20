@@ -26,23 +26,14 @@ export const createJobSchema = z.object({
     "Freelance",
   ]),
 
-  experience: z.string().optional(),
-
-  salaryMin: z
-    .number()
-    .int()
-    .nonnegative()
-    .optional(),
-
-  salaryMax: z
-    .number()
-    .int()
-    .nonnegative()
-    .optional(),
-
-  currency: z
+  experience: z
     .string()
-    .length(3, "Currency must be a 3-letter code")
+    .max(100)
+    .optional(),
+
+  salary: z
+    .string()
+    .max(100)
     .optional(),
 
   description: z
@@ -60,4 +51,13 @@ export const createJobSchema = z.object({
     .url("Invalid job URL"),
 });
 
-export const updateJobSchema = createJobSchema.partial();
+export const updateJobSchema =
+  createJobSchema.partial();
+
+export type CreateJobInput = z.infer<
+  typeof createJobSchema
+>;
+
+export type UpdateJobInput = z.infer<
+  typeof updateJobSchema
+>;

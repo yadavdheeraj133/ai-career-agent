@@ -1,19 +1,17 @@
 import { z } from "zod";
 
 export const CoverLetterSchema = z.object({
-  coverLetter: z.string(),
+  greeting: z.string(),
 
   introduction: z.string(),
 
   body: z.array(z.string()),
 
-  conclusion: z.string(),
+  closing: z.string(),
 
-  keyHighlights: z.array(z.string()),
-
-  tone: z.string(),
-
-  wordCount: z.number().min(0),
+  signature: z.string(),
 });
 
-export type CoverLetter = z.infer<typeof CoverLetterSchema>;
+export type CoverLetter = z.infer<
+  typeof CoverLetterSchema
+>;

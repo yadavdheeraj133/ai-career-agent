@@ -3,109 +3,119 @@ import {
   responseParser,
 } from "../ai/services/index.js";
 
+import * as CareerPrompts from "../ai/prompts/career/index.js";
 import * as ResumePrompts from "../ai/prompts/resume/index.js";
 
 import {
-  ResumeAnalysisSchema,
-  ATSSchema,
-  SkillGapSchema,
-  ResumeTailorSchema,
-  type ResumeAnalysis,
-  type ATS,
-  type SkillGap,
-  type ResumeTailor,
+  CareerCoachSchema,
+  CareerRoadmapSchema,
+  LearningPathSchema,
+  type CareerCoach,
+  type CareerRoadmap,
+  type LearningPath,
+} from "../ai/schemas/career/index.js";
+
+import {
+  ResumeJobMatchSchema,
+  type ResumeJobMatch,
 } from "../ai/schemas/resume/index.js";
 
-export class CareerAIService {
-  async analyzeResume(
-    resume: string
-  ): Promise<ResumeAnalysis> {
+export class CareerGuidanceAIService {
+  async generateCareerCoach(
+    resume: string,
+    currentRole: string,
+    careerGoal: string
+  ): Promise<CareerCoach> {
     const response = await aiService.generate({
       systemPrompt:
-        ResumePrompts.RESUME_ANALYSIS_SYSTEM_PROMPT,
+        CareerPrompts.CAREER_COACH_SYSTEM_PROMPT,
 
       userPrompt:
-        ResumePrompts.buildResumeAnalysisPrompt({
+        CareerPrompts.buildCareerCoachPrompt({
           resume,
+          careerGoal,
         }),
     });
 
     const parsed =
-      responseParser.parse<ResumeAnalysis>(
+      responseParser.parse<CareerCoach>(
         response.content
       );
 
-    return ResumeAnalysisSchema.parse(parsed);
+    return CareerCoachSchema.parse(parsed);
   }
 
-  async analyzeATS(
+  async generateCareerRoadmap(
     resume: string,
-    jobDescription: string
-  ): Promise<ATS> {
+    currentRole: string,
+    careerGoal: string
+  ): Promise<CareerRoadmap> {
     const response = await aiService.generate({
       systemPrompt:
-        ResumePrompts.ATS_SYSTEM_PROMPT,
+        CareerPrompts.CAREER_ROADMAP_SYSTEM_PROMPT,
 
       userPrompt:
-        ResumePrompts.buildATSPrompt({
+        CareerPrompts.buildCareerRoadmapPrompt({
+          resume,
+          currentRole,
+          careerGoal,
+        }),
+    });
+
+    const parsed =
+      responseParser.parse<CareerRoadmap>(
+        response.content
+      );
+
+    return CareerRoadmapSchema.parse(parsed);
+  }
+
+  async generateLearningPath(
+    resume: string,
+    careerGoal: string
+  ): Promise<LearningPath> {
+    const response = await aiService.generate({
+      systemPrompt:
+        CareerPrompts.LEARNING_PATH_SYSTEM_PROMPT,
+
+      userPrompt:
+        CareerPrompts.buildLearningPathPrompt({
+          resume,
+          careerGoal,
+        }),
+    });
+
+    const parsed =
+      responseParser.parse<LearningPath>(
+        response.content
+      );
+
+    return LearningPathSchema.parse(parsed);
+  }
+
+  async matchResumeWithJob(
+    resume: string,
+    jobDescription: string
+  ): Promise<ResumeJobMatch> {
+    const response = await aiService.generate({
+      systemPrompt:
+        ResumePrompts.RESUME_JOB_MATCH_SYSTEM_PROMPT,
+
+      userPrompt:
+        ResumePrompts.buildResumeJobMatchPrompt({
           resume,
           jobDescription,
         }),
     });
 
     const parsed =
-      responseParser.parse<ATS>(
+      responseParser.parse<ResumeJobMatch>(
         response.content
       );
 
-    return ATSSchema.parse(parsed);
-  }
-
-  async analyzeSkillGap(
-    resume: string,
-    jobDescription: string
-  ): Promise<SkillGap> {
-    const response = await aiService.generate({
-      systemPrompt:
-        ResumePrompts.SKILL_GAP_SYSTEM_PROMPT,
-
-      userPrompt:
-        ResumePrompts.buildSkillGapPrompt({
-          resume,
-          jobDescription,
-        }),
-    });
-
-    const parsed =
-      responseParser.parse<SkillGap>(
-        response.content
-      );
-
-    return SkillGapSchema.parse(parsed);
-  }
-
-  async tailorResume(
-    resume: string,
-    jobDescription: string
-  ): Promise<ResumeTailor> {
-    const response = await aiService.generate({
-      systemPrompt:
-        ResumePrompts.RESUME_TAILOR_SYSTEM_PROMPT,
-
-      userPrompt:
-        ResumePrompts.buildResumeTailorPrompt({
-          resume,
-          jobDescription,
-        }),
-    });
-
-    const parsed =
-      responseParser.parse<ResumeTailor>(
-        response.content
-      );
-
-    return ResumeTailorSchema.parse(parsed);
+    return ResumeJobMatchSchema.parse(parsed);
   }
 }
 
-export const careerAIService = new CareerAIService();
+export const careerGuidanceAIService =
+  new CareerGuidanceAIService();

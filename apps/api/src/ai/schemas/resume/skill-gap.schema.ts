@@ -1,21 +1,33 @@
 import { z } from "zod";
 
-export const SkillSchema = z.object({
-  name: z.string(),
-  importance: z.enum(["high", "medium", "low"]),
-  description: z.string().optional(),
+export const SkillInfoSchema = z.object({
+  skill: z.string(),
+  priority: z.enum(["High", "Medium", "Low"]),
+  reason: z.string(),
+});
+
+export const StrengthSchema = z.object({
+  strength: z.string(),
+  reason: z.string().optional(),
 });
 
 export const SkillGapSchema = z.object({
-  matchingSkills: z.array(z.string()),
+  overallSkillMatch: z.number().min(0).max(100),
 
-  missingSkills: z.array(SkillSchema),
+  existingSkills: z.array(SkillInfoSchema),
 
-  recommendedLearningPath: z.array(z.string()),
+  missingSkills: z.array(SkillInfoSchema),
 
-  estimatedCompletionTime: z.string(),
+  criticalSkills: z.array(SkillInfoSchema),
 
-  overallReadiness: z.number().min(0).max(100),
+  niceToHaveSkills: z.array(SkillInfoSchema),
+
+  strengths: z.array(StrengthSchema),
+
+  learningPriorities: z.array(SkillInfoSchema),
+
+  recommendations: z.array(SkillInfoSchema),
 });
 
 export type SkillGap = z.infer<typeof SkillGapSchema>;
+

@@ -2,25 +2,42 @@ import { z } from "zod";
 
 export const InterviewQuestionSchema = z.object({
   question: z.string(),
-  answer: z.string(),
-  difficulty: z.enum(["Easy", "Medium", "Hard"]),
-  tips: z.array(z.string()),
+
+  reason: z.string(),
+
+  sampleAnswer: z.string(),
+
+  followUpQuestions: z.array(z.string()),
 });
 
 export const InterviewPreparationSchema = z.object({
-  companyName: z.string(),
+  overview: z.string(),
 
-  jobTitle: z.string(),
+  interviewDifficulty: z.string(),
 
-  technicalQuestions: z.array(InterviewQuestionSchema),
+  keyFocusAreas: z.array(z.string()),
 
-  behavioralQuestions: z.array(InterviewQuestionSchema),
+  technicalQuestions: z.array(
+    InterviewQuestionSchema
+  ),
 
-  hrQuestions: z.array(InterviewQuestionSchema),
+  behavioralQuestions: z.array(
+    InterviewQuestionSchema
+  ),
 
-  interviewTips: z.array(z.string()),
+  projectQuestions: z.array(
+    InterviewQuestionSchema
+  ),
 
-  confidenceScore: z.number().min(0).max(100),
+  resumeQuestions: z.array(
+    InterviewQuestionSchema
+  ),
+
+  weakAreas: z.array(z.string()),
+
+  preparationTips: z.array(z.string()),
+
+  finalAdvice: z.string(),
 });
 
 export type InterviewPreparation = z.infer<

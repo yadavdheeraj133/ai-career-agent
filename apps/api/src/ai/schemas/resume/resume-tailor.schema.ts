@@ -1,27 +1,54 @@
 import { z } from "zod";
 
-export const ResumeTailorSectionSchema = z.object({
-  original: z.string(),
-  improved: z.string(),
-  reason: z.string(),
+const ExperienceSchema = z.object({
+  company: z.string(),
+  position: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  responsibilities: z.array(z.string()),
+});
+
+const EducationSchema = z.object({
+  degree: z.string(),
+  institution: z.string(),
+  graduationDate: z.string(),
+});
+
+const ProjectSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+});
+
+const ImprovementSummarySchema = z.object({
+  atsImprovements: z.array(z.string()),
+  remainingMissingKeywords: z.array(z.string()),
+  notes: z.array(z.string()),
 });
 
 export const ResumeTailorSchema = z.object({
-  summary: ResumeTailorSectionSchema.optional(),
+  title: z.string(),
 
-  experience: z.array(ResumeTailorSectionSchema),
+  summary: z.string(),
 
-  projects: z.array(ResumeTailorSectionSchema),
+  experience: z.array(ExperienceSchema),
+
+  education: z.array(EducationSchema),
 
   skills: z.array(z.string()),
 
-  keywordsAdded: z.array(z.string()),
+  projects: z.array(ProjectSchema),
 
-  atsScoreBefore: z.number().min(0).max(100),
+  certifications: z.array(z.string()),
 
-  atsScoreAfter: z.number().min(0).max(100),
+  achievements: z.array(z.string()),
 
-  recommendations: z.array(z.string()),
+  languages: z.array(z.string()),
+
+  links: z.array(z.string()),
+
+  improvementSummary: ImprovementSummarySchema,
 });
 
-export type ResumeTailor = z.infer<typeof ResumeTailorSchema>;
+export type ResumeTailor = z.infer<
+  typeof ResumeTailorSchema
+>;

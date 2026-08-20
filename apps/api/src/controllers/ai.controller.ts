@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-import { careerAIService } from "../services/career-ai.service.js";
+import { careerAIService } from "../services/resume-ai.service.js";
 
 export class AIController {
   async analyzeResume(
@@ -65,7 +65,8 @@ export class AIController {
 
       res.status(200).json({
         success: true,
-        message: "Skill gap analysis completed successfully.",
+        message:
+          "Skill gap analysis completed successfully.",
         data: result,
       });
     } catch (error) {
@@ -90,6 +91,31 @@ export class AIController {
       res.status(200).json({
         success: true,
         message: "Resume tailored successfully.",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async matchResumeWithJob(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { resume, jobDescription } = req.body;
+
+      const result =
+        await careerAIService.matchResumeWithJob(
+          resume,
+          jobDescription
+        );
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Resume and job match analysis completed successfully.",
         data: result,
       });
     } catch (error) {

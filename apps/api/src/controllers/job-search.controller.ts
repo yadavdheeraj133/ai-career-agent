@@ -1,0 +1,61 @@
+import {
+  Request,
+  Response,
+  NextFunction,
+} from "express";
+
+import {
+  jobSearchService,
+  type JobSearchFilters,
+} from "../services/job-search.service.js";
+
+export class JobSearchController {
+  async searchJobs(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const filters: JobSearchFilters = {
+        keyword:
+          typeof req.query.keyword === "string"
+            ? req.query.keyword
+            : undefined,
+
+        location:
+          typeof req.query.location === "string"
+            ? req.query.location
+            : undefined,
+
+        workMode:
+          typeof req.query.workMode === "string"
+            ? (req.query.workMode as JobSearchFilters["workMode"])
+            : undefined,
+
+        jobType:
+          typeof req.query.jobType === "string"
+            ? (req.query.jobType as JobSearchFilters["jobType"])
+            : undefined,
+
+        source:
+          typeof req.query.source === "string"
+            ? req.query.source
+            : undefined,
+      };
+
+      const jobs =
+        await jobSearchService.searchJobs(filters);
+
+      res.status(200).json({
+        success: true,
+        count: jobs.length,
+        data: jobs,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+export const jobSearchController =
+  new JobSearchController();

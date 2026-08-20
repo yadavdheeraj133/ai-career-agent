@@ -14,7 +14,42 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   resume Resume?
+  preferences UserPreferences?
+  settings   UserSettings?
 }
+
+
+model UserPreferences {
+  id        String   @id @default(cuid())
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobRole   String?
+  location  String?
+  workMode  String?
+  jobType   String?
+  salary    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model UserSettings {
+  id        String   @id @default(cuid())
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emailNotifications Boolean @default(true)
+  jobAlerts          Boolean @default(true)
+  applicationUpdates Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 model Resume {
   id               String   @id @default(cuid())

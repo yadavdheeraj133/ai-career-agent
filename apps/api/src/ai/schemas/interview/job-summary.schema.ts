@@ -1,6 +1,16 @@
 import { z } from "zod";
 
 export const JobSummarySchema = z.object({
+  jobTitle: z.string(),
+
+  company: z.string(),
+
+  employmentType: z.string(),
+
+  experienceLevel: z.string(),
+
+  location: z.string(),
+
   summary: z.string(),
 
   responsibilities: z.array(z.string()),
@@ -9,15 +19,15 @@ export const JobSummarySchema = z.object({
 
   preferredSkills: z.array(z.string()),
 
-  experience: z.string(),
+  technologies: z.array(z.string()),
 
-  education: z.string(),
+  qualifications: z.array(z.string()),
 
-  location: z.string(),
+  benefits: z.array(z.string()),
 
   salary: z.string(),
-
-  employmentType: z.string(),
 });
 
-export type JobSummary = z.infer<typeof JobSummarySchema>;
+export type JobSummary = z.infer<
+  typeof JobSummarySchema
+>;
