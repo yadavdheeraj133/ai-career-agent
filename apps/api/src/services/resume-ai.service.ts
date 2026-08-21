@@ -1,3 +1,5 @@
+// apps/api/src/services/resume-ai.service.ts
+
 import {
   aiService,
   responseParser,
@@ -11,12 +13,16 @@ import {
   SkillGapSchema,
   ResumeTailorSchema,
   ResumeJobMatchSchema,
+  AIVerdictSchema,
+  InterviewProbabilitySchema,
 
   type ResumeAnalysis,
   type ATS,
   type SkillGap,
   type ResumeTailor,
   type ResumeJobMatch,
+  type AIVerdict,
+  type InterviewProbability,
 } from "../ai/schemas/resume/index.js";
 
 export class CareerAIService {
@@ -156,6 +162,62 @@ export class CareerAIService {
     console.log(JSON.stringify(parsed, null, 2));
 
     return ResumeJobMatchSchema.parse(parsed);
+  }
+
+  async generateAIVerdict(
+    resume: string,
+    jobDescription: string
+  ): Promise<AIVerdict> {
+    const response = await aiService.generate({
+      systemPrompt:
+        ResumePrompts.AI_VERDICT_SYSTEM_PROMPT,
+
+      userPrompt:
+        ResumePrompts.buildAIVerdictPrompt({
+          resume,
+          jobDescription,
+        }),
+    });
+
+    const parsed =
+      responseParser.parse<AIVerdict>(
+        response.content
+      );
+
+    console.log("\n======================================");
+    console.log("AI VERDICT RESPONSE");
+    console.log("======================================");
+    console.log(JSON.stringify(parsed, null, 2));
+
+    return AIVerdictSchema.parse(parsed);
+  }
+
+  async calculateInterviewProbability(
+    resume: string,
+    jobDescription: string
+  ): Promise<InterviewProbability> {
+    const response = await aiService.generate({
+      systemPrompt:
+        ResumePrompts.INTERVIEW_PROBABILITY_SYSTEM_PROMPT,
+
+      userPrompt:
+        ResumePrompts.buildInterviewProbabilityPrompt({
+          resume,
+          jobDescription,
+        }),
+    });
+
+    const parsed =
+      responseParser.parse<InterviewProbability>(
+        response.content
+      );
+
+    console.log("\n======================================");
+    console.log("INTERVIEW PROBABILITY RESPONSE");
+    console.log("======================================");
+    console.log(JSON.stringify(parsed, null, 2));
+
+    return InterviewProbabilitySchema.parse(parsed);
   }
 }
 

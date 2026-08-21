@@ -3,3 +3,5 @@ export * from "./ats.prompt.js";
 export * from "./skill-gap.prompt.js";
 export * from "./resume-tailor.prompt.js";
 export * from "./resume-job-match.prompt.js";
+export * from "./ai-verdict.prompt.js";
+export * from "./interview-probability.prompt.js";

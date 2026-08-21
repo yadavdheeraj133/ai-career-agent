@@ -15,3 +15,7 @@ export {
 export * from "./resume-tailor.schema.js";
 
 export * from "./resume-job-match.schema.js";
+
+export * from "./ai-verdict.schema.js";
+
+export * from "./interview-probability.schema.js";

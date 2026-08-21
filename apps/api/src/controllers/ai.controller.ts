@@ -1,3 +1,5 @@
+// apps/api/src/controllers/ai.controller.ts
+
 import { Request, Response, NextFunction } from "express";
 
 import { careerAIService } from "../services/resume-ai.service.js";
@@ -11,9 +13,8 @@ export class AIController {
     try {
       const { resume } = req.body;
 
-      const result = await careerAIService.analyzeResume(
-        resume
-      );
+      const result =
+        await careerAIService.analyzeResume(resume);
 
       res.status(200).json({
         success: true,
@@ -116,6 +117,55 @@ export class AIController {
         success: true,
         message:
           "Resume and job match analysis completed successfully.",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async generateAIVerdict(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { resume, jobDescription } = req.body;
+
+      const result =
+        await careerAIService.generateAIVerdict(
+          resume,
+          jobDescription
+        );
+
+      res.status(200).json({
+        success: true,
+        message: "AI verdict generated successfully.",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async calculateInterviewProbability(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { resume, jobDescription } = req.body;
+
+      const result =
+        await careerAIService.calculateInterviewProbability(
+          resume,
+          jobDescription
+        );
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Interview probability calculated successfully.",
         data: result,
       });
     } catch (error) {
