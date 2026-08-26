@@ -1,0 +1,173 @@
+.agent-activity {
+  width: 100%;
+
+  padding-bottom: 20px;
+}
+
+.activity-status {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 6px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(79, 213, 208, 0.08);
+
+  color: #318e8b;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  white-space: nowrap;
+}
+
+.activity-status > span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: var(--cyan);
+}
+
+.activity-card {
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.9);
+
+  box-shadow:
+    0 12px 30px rgba(47, 38, 88, 0.035);
+}
+
+.activity-item {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  padding: 17px 20px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child {
+  border-bottom: 0;
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  background: rgba(112, 87, 232, 0.08);
+
+  color: var(--primary);
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.activity-icon.skill {
+  background: rgba(79, 213, 208, 0.1);
+
+  color: #318e8b;
+}
+
+.activity-icon.profile {
+  background: rgba(112, 87, 232, 0.07);
+
+  color: var(--primary);
+}
+
+.activity-icon.roadmap {
+  background: rgba(148, 126, 255, 0.1);
+
+  color: #8068ec;
+}
+
+.activity-content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.activity-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.activity-title-row h3 {
+  margin: 0;
+
+  color: var(--foreground);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  line-height: 1.4;
+}
+
+.activity-title-row span {
+  flex-shrink: 0;
+
+  color: #aaa6b8;
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.activity-content p {
+  margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 9px;
+
+  line-height: 1.55;
+}
+
+@media (max-width: 550px) {
+  .activity-item {
+    padding: 15px 16px;
+  }
+
+  .activity-title-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 3px;
+  }
+
+  .activity-title-row span {
+    order: -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .activity-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .activity-item {
+    gap: 10px;
+  }
+}

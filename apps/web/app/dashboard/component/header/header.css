@@ -1,0 +1,299 @@
+.dashboard-header {
+  width: 100%;
+  max-width: 1250px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin: 0 auto 30px;
+}
+
+.dashboard-header-left {
+  min-width: 0;
+}
+
+.dashboard-eyebrow {
+  margin-bottom: 7px;
+
+  color: var(--primary);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.15em;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+
+  color: var(--foreground);
+
+  font-size: clamp(27px, 3vw, 35px);
+  font-weight: 850;
+
+  line-height: 1.12;
+
+  letter-spacing: -0.045em;
+}
+
+.dashboard-subtitle {
+  margin-top: 8px;
+
+  color: var(--muted);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.dashboard-header-right {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  flex-shrink: 0;
+}
+
+.header-icon-button {
+  width: 42px;
+  height: 42px;
+
+  position: relative;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(232, 229, 242, 0.9);
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.8);
+
+  color: #625d70;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.header-icon-button:hover {
+  background: #ffffff;
+
+  color: var(--primary);
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 9px 20px rgba(47, 38, 88, 0.06);
+}
+
+.header-icon-button > span {
+  font-size: 19px;
+
+  line-height: 1;
+}
+
+.header-icon-button i {
+  width: 6px;
+  height: 6px;
+
+  position: absolute;
+  top: 9px;
+  right: 9px;
+
+  border: 1.5px solid #ffffff;
+  border-radius: 50%;
+
+  background: var(--cyan);
+}
+
+.header-profile-button {
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 4px 9px 4px 5px;
+
+  border: 1px solid rgba(232, 229, 242, 0.9);
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.8);
+
+  color: var(--foreground);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.header-profile-button:hover {
+  background: #ffffff;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 9px 20px rgba(47, 38, 88, 0.06);
+}
+
+.header-avatar {
+  width: 33px;
+  height: 33px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      #947eff
+    );
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.header-profile-info {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 2px;
+
+  min-width: 72px;
+}
+
+.header-profile-info strong {
+  color: var(--foreground);
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.header-profile-info small {
+  color: var(--muted);
+
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.header-profile-arrow {
+  color: #aaa6b8;
+
+  font-size: 14px;
+}
+
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 850px) {
+  .dashboard-header {
+    align-items: flex-start;
+  }
+
+  .header-profile-info,
+  .header-profile-arrow {
+    display: none;
+  }
+
+  .header-profile-button {
+    width: 42px;
+
+    justify-content: center;
+
+    padding: 4px;
+  }
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 600px) {
+  .dashboard-header {
+    gap: 15px;
+
+    margin-bottom: 24px;
+  }
+
+  .dashboard-eyebrow {
+    font-size: 8px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 23px;
+  }
+
+  .dashboard-subtitle {
+    margin-top: 6px;
+
+    font-size: 11px;
+  }
+
+  .dashboard-header-right {
+    gap: 6px;
+  }
+
+  .header-icon-button,
+  .header-profile-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .header-avatar {
+    width: 29px;
+    height: 29px;
+  }
+
+  .header-icon-button > span {
+    font-size: 17px;
+  }
+}
+
+/* ================================
+   VERY SMALL PHONES
+================================ */
+
+@media (max-width: 380px) {
+  .dashboard-header h1 {
+    font-size: 20px;
+  }
+
+  .dashboard-subtitle {
+    display: none;
+  }
+
+  .dashboard-header-right {
+    gap: 4px;
+  }
+
+  .header-icon-button,
+  .header-profile-button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .header-avatar {
+    width: 27px;
+    height: 27px;
+
+    font-size: 10px;
+  }
+}

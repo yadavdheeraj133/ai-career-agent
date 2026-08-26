@@ -1,0 +1,197 @@
+.career-insights {
+  width: 100%;
+
+  margin-bottom: 30px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 14px;
+}
+
+.section-eyebrow {
+  margin-bottom: 5px;
+
+  color: var(--primary);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.section-heading h2 {
+  margin: 0;
+
+  color: var(--foreground);
+
+  font-size: 20px;
+  font-weight: 800;
+
+  letter-spacing: -0.035em;
+}
+
+.insights-powered {
+  padding: 6px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(112, 87, 232, 0.07);
+
+  color: var(--primary);
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.insights-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.insight-card {
+  min-width: 0;
+
+  padding: 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+
+  background: rgba(255, 255, 255, 0.9);
+
+  box-shadow:
+    0 12px 30px rgba(47, 38, 88, 0.035);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 17px 35px rgba(47, 38, 88, 0.065);
+}
+
+.insight-top {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 18px;
+}
+
+.insight-icon {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  background: rgba(112, 87, 232, 0.08);
+
+  color: var(--primary);
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.insight-type {
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.insight-card h3 {
+  margin: 0;
+
+  color: var(--foreground);
+
+  font-size: 13px;
+  font-weight: 800;
+
+  line-height: 1.4;
+
+  letter-spacing: -0.015em;
+}
+
+.insight-card > p {
+  min-height: 52px;
+
+  margin-top: 8px;
+
+  color: var(--muted);
+
+  font-size: 10px;
+
+  line-height: 1.6;
+}
+
+.insight-action {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 16px;
+
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--primary);
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.insight-action span {
+  font-size: 13px;
+
+  transition: transform 0.2s ease;
+}
+
+.insight-action:hover span {
+  transform: translateX(3px);
+}
+
+@media (max-width: 850px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-card > p {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .section-heading {
+    align-items: flex-start;
+  }
+
+  .section-heading h2 {
+    font-size: 18px;
+  }
+
+  .insight-card {
+    padding: 18px;
+  }
+}

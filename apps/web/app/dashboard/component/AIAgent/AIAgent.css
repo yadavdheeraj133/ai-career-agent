@@ -1,0 +1,300 @@
+.ai-agent-card {
+  position: relative;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  padding: 26px;
+
+  border: 1px solid rgba(112, 87, 232, 0.16);
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7057e8,
+      #8068ec 52%,
+      #947eff
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 20px 45px rgba(112, 87, 232, 0.2);
+}
+
+.ai-agent-content {
+  position: relative;
+  z-index: 2;
+}
+
+.ai-agent-glow {
+  width: 260px;
+  height: 260px;
+
+  position: absolute;
+  right: -110px;
+  top: -120px;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  filter: blur(5px);
+
+  pointer-events: none;
+}
+
+.ai-agent-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+.ai-agent-title {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+.ai-agent-symbol {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.13);
+
+  font-size: 16px;
+}
+
+.ai-agent-eyebrow {
+  margin-bottom: 4px;
+
+  color: rgba(255, 255, 255, 0.65);
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.14em;
+}
+
+.ai-agent-title h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  letter-spacing: -0.03em;
+}
+
+.ai-agent-status {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 6px 9px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.09);
+
+  color: rgba(255, 255, 255, 0.85);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ai-agent-status span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: var(--cyan);
+
+  box-shadow:
+    0 0 0 3px rgba(79, 213, 208, 0.14);
+}
+
+.ai-agent-message {
+  margin-top: 28px;
+}
+
+.ai-agent-message h3 {
+  max-width: 380px;
+
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 750;
+
+  line-height: 1.3;
+
+  letter-spacing: -0.035em;
+}
+
+.ai-agent-message h3 strong {
+  font-weight: 850;
+}
+
+.ai-agent-message p {
+  max-width: 400px;
+
+  margin-top: 9px;
+
+  color: rgba(255, 255, 255, 0.68);
+
+  font-size: 11px;
+
+  line-height: 1.6;
+}
+
+.ai-agent-stats {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 8px;
+
+  margin-top: 24px;
+}
+
+.ai-agent-stat {
+  padding: 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 13px;
+
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ai-agent-stat strong {
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 850;
+
+  letter-spacing: -0.03em;
+}
+
+.ai-agent-stat span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: rgba(255, 255, 255, 0.58);
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.ai-agent-stat.strong {
+  background: rgba(79, 213, 208, 0.12);
+}
+
+.ai-agent-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-top: 20px;
+  padding-top: 16px;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ai-agent-footer > span {
+  color: rgba(255, 255, 255, 0.52);
+
+  font-size: 9px;
+}
+
+.ai-agent-footer a {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+.ai-agent-footer a span {
+  font-size: 13px;
+
+  transition: transform 0.2s ease;
+}
+
+.ai-agent-footer a:hover span {
+  transform: translateX(3px);
+}
+
+@media (max-width: 700px) {
+  .ai-agent-card {
+    padding: 22px;
+  }
+
+  .ai-agent-message h3 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-agent-card {
+    padding: 20px;
+  }
+
+  .ai-agent-header {
+    align-items: center;
+  }
+
+  .ai-agent-stats {
+    gap: 6px;
+  }
+
+  .ai-agent-stat {
+    padding: 10px;
+  }
+
+  .ai-agent-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 360px) {
+  .ai-agent-title h2 {
+    font-size: 16px;
+  }
+
+  .ai-agent-message h3 {
+    font-size: 18px;
+  }
+
+  .ai-agent-stat strong {
+    font-size: 16px;
+  }
+}

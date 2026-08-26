@@ -6,6 +6,16 @@
 
 ---
 
+
+**url 
+http://localhost:3000/auth/login
+http://localhost:3000/auth/register
+http://localhost:3000/auth/forgot-password
+http://localhost:3000/skill
+http://localhost:3000/dashboard
+
+
+
 # 1. Product Overview
 
 AI Career Agent helps users understand their career profile, discover relevant jobs, analyze their compatibility with a job, improve their resume, prepare applications, and prepare for interviews.

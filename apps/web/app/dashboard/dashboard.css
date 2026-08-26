@@ -1,0 +1,169 @@
+@import "./component/sidebar/Sidebar.css";
+@import "./component/header/header.css";
+@import "./component/CareerScore/CareerScore.css";
+@import "./component/AIAgent/AIAgent.css";
+@import "./component/CareerInsights/CareerInsights.css";
+@import "./component/CareerRoadmap/CareerRoadmap.css";
+@import "./component/AgentActivity/AgentActivity.css";
+
+
+/* =========================================
+   DASHBOARD PAGE
+========================================= */
+
+.dashboard-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(112, 87, 232, 0.07),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 10% 85%,
+      rgba(79, 213, 208, 0.045),
+      transparent 25%
+    ),
+    var(--background);
+}
+
+
+/* =========================================
+   MAIN CONTENT AREA
+========================================= */
+
+.dashboard-main {
+  width: calc(100% - 248px);
+
+  min-width: 0;
+
+  margin-left: 248px;
+
+  padding: 34px 42px 60px;
+}
+
+
+/* =========================================
+   CONTENT CONTAINER
+========================================= */
+
+.dashboard-content {
+  width: 100%;
+
+  max-width: 1250px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================================
+   COMMAND CENTER
+========================================= */
+
+.dashboard-command-center {
+  width: 100%;
+
+  margin-bottom: 30px;
+}
+
+.dashboard-command-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 16px;
+
+  width: 100%;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1050px) {
+  .dashboard-main {
+    padding: 30px 28px 50px;
+  }
+
+  .dashboard-command-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================
+   SMALL TABLET
+========================================= */
+
+@media (max-width: 900px) {
+  .dashboard-main {
+    width: calc(100% - 220px);
+
+    margin-left: 220px;
+
+    padding: 28px 24px 45px;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 700px) {
+  .dashboard-main {
+    width: calc(100% - 74px);
+
+    margin-left: 74px;
+
+    padding: 24px 20px 40px;
+  }
+
+  .dashboard-command-center {
+    margin-bottom: 24px;
+  }
+
+  .dashboard-command-grid {
+    gap: 12px;
+  }
+}
+
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    width: calc(100% - 64px);
+
+    margin-left: 64px;
+
+    padding: 20px 14px 35px;
+  }
+
+  .dashboard-command-center {
+    margin-bottom: 24px;
+  }
+}
+
+
+/* =========================================
+   VERY SMALL PHONES
+========================================= */
+
+@media (max-width: 360px) {
+  .dashboard-main {
+    width: calc(100% - 64px);
+
+    margin-left: 64px;
+
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
