@@ -1,0 +1,79 @@
+# Server
+PORT=5000
+
+# Database
+DATABASE_URL=postgresql://postgres:postd123@localhost:5432/career_agent_db
+
+# Authentication
+JWT_SECRET=AI_Career_Agent_Development_Secret_2026
+
+# AI Provider
+# AI_PROVIDER=ollama
+
+# Ollama
+# OLLAMA_BASE_URL=http://localhost:11434
+# OLLAMA_MODEL=qwen2.5:7b
+# OLLAMA_TIMEOUT_MS=300000
+
+# ──────────────────────────────────────────────
+# Automation (Phase 3) — used by the worker process
+# ──────────────────────────────────────────────
+
+# Master switch (default: true)
+# AUTOMATION_ENABLED=true
+
+# Run all tasks once on worker boot (default: true)
+# AUTOMATION_RUN_ON_START=true
+
+# How often to fetch jobs from providers (default: 900000 = 15 min)
+# JOB_FETCH_INTERVAL_MS=900000
+
+# How often to expire stale jobs (default: 21600000 = 6 hrs)
+# JOB_EXPIRE_INTERVAL_MS=21600000
+
+# Max age before a job is marked EXPIRED (default: 2592000000 = 30 days)
+# JOB_TTL_MS=2592000000
+
+# How often to clean up old read notifications (default: 21600000 = 6 hrs)
+# NOTIFICATION_CLEANUP_INTERVAL_MS=21600000
+
+# Max age before a read notification is deleted (default: 2592000000 = 30 days)
+# NOTIFICATION_TTL_MS=2592000000
+
+# Retry settings
+# AUTOMATION_MAX_ATTEMPTS=3
+# AUTOMATION_BASE_BACKOFF_MS=200
+# AUTOMATION_MAX_BACKOFF_MS=5000
+
+# Max jobs to process per provider per fetch (default: 500)
+# JOB_MAX_PER_PROVIDER=500
+
+# Provider URLs — comma-separated, format: name|https://...|jobsPath
+# JOB_PROVIDER_URLS=linkedin|https://example.com/api/jobs,data|https://example2.com/jobs,data.results
+
+# Per-provider HTTP headers (JSON) — e.g. for auth tokens
+# JOB_PROVIDER_HEADERS={"linkedin":{"Authorization":"Bearer token"}}
+
+# Fixture file for dev/testing (JSON array of raw jobs)
+# JOB_FIXTURE_FILE=./fixtures/jobs.json
+
+# AI enrichment (disabled by default)
+# AI_ENRICHMENT_ENABLED=false
+# AI_ENRICHMENT_INTERVAL_MS=3600000
+# AI_ENRICHMENT_LIMIT=5
+
+
+
+# This was inserted by `prisma init`:
+# Environment variables declared in this file are NOT automatically loaded by Prisma.
+# Please add `import "dotenv/config";` to your `prisma.config.ts` file, or use the Prisma CLI with Bun
+# to load environment variables from .env files: https://pris.ly/prisma-config-env-vars.
+
+# Prisma supports the native connection string format for PostgreSQL, MySQL, SQLite, SQL Server, MongoDB and CockroachDB.
+# See the documentation for all the connection string options: https://pris.ly/d/connection-strings
+
+# The following `prisma+postgres` URL is similar to the URL produced by running a local Prisma Postgres
+# server with the `prisma dev` CLI command, when not choosing any non-default ports or settings. The API key, unlike the
+# one found in a remote Prisma Postgres URL, does not contain any sensitive information.
+
+# DATABASE_URL="prisma+postgres://localhost:51213/?api_key=eyJkYXRhYmFzZVVybCI6InBvc3RncmVzOi8vcG9zdGdyZXM6cG9zdGdyZXNAbG9jYWxob3N0OjUxMjE0L3RlbXBsYXRlMT9zc2xtb2RlPWRpc2FibGUmY29ubmVjdGlvbl9saW1pdD0xMCZjb25uZWN0X3RpbWVvdXQ9MCZtYXhfaWRsZV9jb25uZWN0aW9uX2xpZmV0aW1lPTAmcG9vbF90aW1lb3V0PTAmc29ja2V0X3RpbWVvdXQ9MCIsIm5hbWUiOiJkZWZhdWx0Iiwic2hhZG93RGF0YWJhc2VVcmwiOiJwb3N0Z3JlczovL3Bvc3RncmVzOnBvc3RncmVzQGxvY2FsaG9zdDo1MTIxNS90ZW1wbGF0ZTE_c3NsbW9kZT1kaXNhYmxlJmNvbm5lY3Rpb25fbGltaXQ9MTAmY29ubmVjdF90aW1lb3V0PTAmbWF4X2lkbGVfY29ubmVjdGlvbl9saWZldGltZT0wJnBvb2xfdGltZW91dD0wJnNvY2tldF90aW1lb3V0PTAifQ"

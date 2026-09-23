@@ -1,4 +1,5 @@
 import skillRoutes from "../routes/skill.route.js";
+import resumeUploadRoutes from "../routes/resume-upload.route.js";
 import { Router } from "express";
 import authRoutes from "../routes/auth.routes.js";
 import { errorHandler } from "../middlewares/error.middleware.js";
@@ -39,6 +40,7 @@ router.use("/users/settings",userSettingsRoutes);
 router.use("/api/dashboard",dashboardRoutes);
 router.use("/api/notifications",notificationRoutes);
 router.use("/api/skills", skillRoutes);
+router.use("/resume", resumeUploadRoutes);
 // Error handler should be last
 router.use(errorHandler);
 

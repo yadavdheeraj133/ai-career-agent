@@ -1,0 +1,650 @@
+.missing-skills-page {
+  min-height: 100vh;
+  padding: 40px 42px 60px;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.missing-skills-page .feature-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.missing-skills-page .feature-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.missing-skills-page .back-link {
+  display: inline-flex;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.missing-skills-page .back-link:hover {
+  color: var(--primary);
+}
+
+.missing-skills-page .feature-eyebrow,
+.missing-skills-page .card-label {
+  margin: 0 0 7px;
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.missing-skills-page .feature-header h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.missing-skills-page .feature-description {
+  max-width: 660px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+
+.missing-skills-page .primary-button,
+.missing-skills-page .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.missing-skills-page .primary-button {
+  border: 0;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.missing-skills-page .secondary-button {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--foreground);
+}
+
+.missing-skills-page .primary-button:hover,
+.missing-skills-page .secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ================================
+   SUMMARY
+================================ */
+
+.skills-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+
+  gap: 30px;
+
+  padding: 26px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid rgba(112, 87, 232, 0.13);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 87, 232, 0.045),
+      #ffffff
+    );
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.summary-main {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+}
+
+.summary-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  background: rgba(112, 87, 232, 0.09);
+
+  color: var(--primary);
+
+  font-size: 17px;
+}
+
+.summary-main h2 {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 830;
+
+  letter-spacing: -0.03em;
+}
+
+.summary-main p:not(.card-label) {
+  max-width: 620px;
+
+  margin: 9px 0 0;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+  align-items: center;
+}
+
+.summary-stats div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  padding-left: 15px;
+
+  border-left: 1px solid var(--border);
+}
+
+.summary-stats strong {
+  font-size: 19px;
+  font-weight: 850;
+}
+
+.summary-stats span {
+  color: var(--muted);
+
+  font-size: 8px;
+}
+
+/* ================================
+   TARGET ROLE
+================================ */
+
+.target-role-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 21px 24px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.target-role-card h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.target-role-card p:not(.card-label) {
+  margin: 5px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.role-badge {
+  padding: 7px 10px;
+
+  border-radius: 8px;
+
+  background: rgba(233, 173, 91, 0.09);
+
+  color: #bd8335;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+/* ================================
+   MISSING SKILLS
+================================ */
+
+.missing-skills-card {
+  padding: 24px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.missing-skills-page .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.missing-skills-page .section-header h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.section-count {
+  padding: 6px 10px;
+
+  border-radius: 8px;
+
+  background: #f7f6fa;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.missing-skills-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.missing-skill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 25px;
+
+  padding: 20px 0;
+
+  border-bottom: 1px solid #f0eef4;
+}
+
+.missing-skill-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.skill-main {
+  display: flex;
+  align-items: center;
+
+  gap: 13px;
+
+  min-width: 0;
+}
+
+.skill-icon {
+  width: 43px;
+  height: 43px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  background: #f6f4fa;
+
+  color: var(--primary);
+
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.skill-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.skill-name-row h3 {
+  margin: 0;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.skill-main p {
+  max-width: 650px;
+
+  margin: 5px 0 0;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.importance-badge {
+  padding: 4px 7px;
+
+  border-radius: 6px;
+
+  font-size: 7px;
+  font-weight: 800;
+}
+
+.importance-badge.high {
+  background: rgba(231, 124, 135, 0.09);
+  color: #c7616d;
+}
+
+.importance-badge.medium {
+  background: rgba(233, 173, 91, 0.09);
+  color: #bd8335;
+}
+
+.skill-match {
+  display: flex;
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  gap: 4px;
+
+  flex-shrink: 0;
+}
+
+.skill-match span {
+  color: var(--muted);
+
+  font-size: 8px;
+}
+
+.skill-match strong {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+/* ================================
+   EXISTING SKILLS
+================================ */
+
+.existing-skills-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding: 24px;
+
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.existing-skills-card h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.existing-skills-card p:not(.card-label) {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+.existing-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+}
+
+.existing-skill-tags span {
+  padding: 8px 10px;
+
+  border: 1px solid rgba(75, 198, 165, 0.15);
+  border-radius: 8px;
+
+  background: rgba(75, 198, 165, 0.07);
+
+  color: #399f84;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* ================================
+   PRIORITY
+================================ */
+
+.priority-card {
+  padding: 24px;
+
+  border: 1px solid rgba(112, 87, 232, 0.12);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 87, 232, 0.035),
+      #ffffff
+    );
+}
+
+.priority-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.priority-icon {
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  background: rgba(112, 87, 232, 0.09);
+
+  color: var(--primary);
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.priority-heading h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.priority-card > p {
+  max-width: 720px;
+
+  margin: 12px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.priority-actions {
+  display: flex;
+
+  gap: 9px;
+
+  margin-top: 18px;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1000px) {
+  .skills-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-stats {
+    padding-top: 18px;
+
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 750px) {
+  .existing-skills-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .existing-skill-tags {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 650px) {
+  .missing-skills-page {
+    padding: 24px 18px 40px;
+  }
+
+  .missing-skills-page .feature-header {
+    flex-direction: column;
+  }
+
+  .missing-skills-page .feature-header > .secondary-button {
+    width: 100%;
+  }
+
+  .skills-summary,
+  .target-role-card,
+  .missing-skills-card,
+  .existing-skills-card,
+  .priority-card {
+    padding: 18px;
+
+    border-radius: 15px;
+  }
+
+  .summary-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-stats div {
+    padding-left: 0;
+    padding-top: 10px;
+
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .target-role-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .role-badge {
+    align-self: flex-start;
+  }
+
+  .missing-skills-page .section-header {
+    align-items: flex-start;
+  }
+
+  .missing-skill-row {
+    align-items: flex-start;
+  }
+
+  .skill-main {
+    align-items: flex-start;
+  }
+
+  .skill-match {
+    display: none;
+  }
+
+  .priority-actions {
+    flex-direction: column;
+  }
+
+  .priority-actions .primary-button,
+  .priority-actions .secondary-button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,583 @@
+.tailor-page {
+  min-height: 100vh;
+  padding: 40px 42px 60px;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.tailor-page .feature-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.tailor-page .feature-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.tailor-page .back-link {
+  display: inline-flex;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tailor-page .back-link:hover {
+  color: var(--primary);
+}
+
+.tailor-page .feature-eyebrow,
+.tailor-page .card-label {
+  margin: 0 0 7px;
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.tailor-page .feature-header h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.tailor-page .feature-description {
+  max-width: 650px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+
+.tailor-page .primary-button,
+.tailor-page .secondary-button,
+.change-job-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  text-decoration: none;
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tailor-page .primary-button {
+  border: 0;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.tailor-page .primary-button:hover,
+.tailor-page .secondary-button:hover,
+.change-job-button:hover {
+  transform: translateY(-2px);
+}
+
+.tailor-page .secondary-button,
+.change-job-button {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--foreground);
+}
+
+/* ================================
+   TARGET JOB
+================================ */
+
+.target-job-card,
+.tailor-config-card,
+.suggestions-card,
+.preview-card,
+.tailor-action-card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.target-job-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 22px 24px;
+
+  margin-bottom: 16px;
+}
+
+.target-job-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.job-icon {
+  width: 44px;
+  height: 44px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: rgba(112, 87, 232, 0.09);
+  color: var(--primary);
+
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.target-job-info h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.target-job-info p:not(.card-label) {
+  margin: 5px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+}
+
+/* ================================
+   CONFIG
+================================ */
+
+.tailor-config-card,
+.suggestions-card,
+.preview-card {
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.tailor-page .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.tailor-page .section-header h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+
+  letter-spacing: -0.025em;
+}
+
+.tailor-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding-top: 20px;
+}
+
+.tailor-option {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  gap: 13px;
+
+  padding: 15px;
+
+  border: 1px solid var(--border);
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.tailor-option:hover {
+  background: #faf9fc;
+}
+
+.tailor-option.selected {
+  border-color: rgba(112, 87, 232, 0.45);
+  background: rgba(112, 87, 232, 0.035);
+}
+
+.option-radio {
+  width: 17px;
+  height: 17px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border: 1.5px solid #c9c5d3;
+  border-radius: 50%;
+}
+
+.tailor-option.selected .option-radio {
+  border-color: var(--primary);
+}
+
+.option-radio span {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: var(--primary);
+}
+
+.option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.option-content strong {
+  color: var(--foreground);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.option-content small {
+  color: var(--muted);
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.option-badge {
+  margin-left: auto;
+
+  padding: 6px 8px;
+
+  border-radius: 7px;
+
+  background: rgba(75, 198, 165, 0.09);
+
+  color: #399f84;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+/* ================================
+   SUGGESTIONS
+================================ */
+
+.suggestion-count,
+.preview-label {
+  padding: 6px 10px;
+
+  border-radius: 8px;
+
+  background: #f7f6fa;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.suggestions-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+  padding-top: 20px;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 11px;
+
+  padding: 15px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.suggestion-number {
+  width: 23px;
+  height: 23px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 7px;
+
+  background: rgba(112, 87, 232, 0.08);
+
+  color: var(--primary);
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.suggestion-item h3 {
+  margin: 1px 0 0;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.suggestion-item p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+/* ================================
+   PREVIEW
+================================ */
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 40px 1fr;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding-top: 20px;
+}
+
+.preview-column {
+  min-width: 0;
+}
+
+.preview-column-label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--muted);
+
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.resume-preview {
+  min-height: 170px;
+
+  padding: 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background: #faf9fc;
+}
+
+.resume-preview.improved {
+  border-color: rgba(112, 87, 232, 0.2);
+  background: rgba(112, 87, 232, 0.025);
+}
+
+.resume-preview h3 {
+  margin: 0;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.resume-preview p {
+  margin: 10px 0 16px;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.preview-line {
+  width: 100%;
+  height: 5px;
+
+  margin-top: 8px;
+
+  border-radius: 5px;
+
+  background: #e8e5ed;
+}
+
+.preview-line.short {
+  width: 45%;
+}
+
+.preview-line.medium {
+  width: 72%;
+}
+
+.preview-arrow {
+  width: 32px;
+  height: 32px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+
+  background: rgba(112, 87, 232, 0.08);
+
+  color: var(--primary);
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* ================================
+   ACTION
+================================ */
+
+.tailor-action-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding: 24px;
+}
+
+.tailor-action-card > div:first-child {
+  max-width: 650px;
+}
+
+.tailor-action-card h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.tailor-action-card p:not(.card-label) {
+  margin: 8px 0 0;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 900px) {
+  .suggestions-list {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-arrow {
+    transform: rotate(90deg);
+    margin: 0 auto;
+  }
+
+  .tailor-action-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 650px) {
+  .tailor-page {
+    padding: 24px 18px 40px;
+  }
+
+  .tailor-page .feature-header {
+    flex-direction: column;
+  }
+
+  .tailor-page .feature-header > .secondary-button {
+    width: 100%;
+  }
+
+  .target-job-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .change-job-button {
+    width: 100%;
+  }
+
+  .tailor-config-card,
+  .suggestions-card,
+  .preview-card,
+  .tailor-action-card {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .option-badge {
+    display: none;
+  }
+
+  .tailor-action-card .primary-button {
+    width: 100%;
+  }
+}

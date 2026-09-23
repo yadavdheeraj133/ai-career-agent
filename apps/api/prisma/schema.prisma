@@ -87,6 +87,13 @@ model Resume {
   achievements     Json?
   languages        Json?
   links            Json?
+  parsedProfile    Json?
+  rawText          String?
+  originalFileName String?
+  storagePath      String?
+  mimeType         String?
+  fileSize         Int?
+  uploadedAt       DateTime?
 
   template         String   @default("modern")
   isDefault        Boolean  @default(true)

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
@@ -9,6 +10,7 @@ import { initials } from "@/lib/format";
 import type { AppNotification, Job } from "@/lib/types";
 
 export default function Header() {
+  const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unread, setUnread] = useState(0);
@@ -257,6 +259,7 @@ export default function Header() {
           type="button"
           className="header-profile-button"
           aria-label="Open profile"
+          onClick={() => router.push("/profile")}
         >
           <span className="header-avatar">{initials(displayName)}</span>
 

@@ -1,0 +1,70 @@
+.resume-upload-page .upload-back-link {
+  display: inline-flex;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.resume-upload-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 620px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+}
+
+.resume-upload-card label {
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.resume-upload-card input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 12px;
+}
+
+.upload-file-note,
+.upload-selected-file,
+.upload-message,
+.upload-profile-link {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.upload-message.success,
+.upload-profile-link {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.upload-message.error {
+  color: #b44b66;
+}
+
+.resume-upload-card .primary-button {
+  align-self: flex-start;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.resume-upload-card .primary-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}

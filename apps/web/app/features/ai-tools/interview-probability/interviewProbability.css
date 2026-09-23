@@ -1,0 +1,730 @@
+.interview-probability-page {
+  min-height: 100vh;
+  padding: 40px 42px 60px;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.interview-probability-page .feature-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+/* ================================
+   HEADER
+================================ */
+
+.interview-probability-page .feature-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.interview-probability-page .back-link {
+  display: inline-flex;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.interview-probability-page .back-link:hover {
+  color: var(--primary);
+}
+
+.interview-probability-page .feature-eyebrow,
+.interview-probability-page .card-label {
+  margin: 0 0 7px;
+  color: var(--primary);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.interview-probability-page .feature-header h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 36px);
+  font-weight: 850;
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.interview-probability-page .feature-description {
+  max-width: 660px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+
+.interview-probability-page .primary-button,
+.interview-probability-page .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.interview-probability-page .primary-button {
+  border: 0;
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.interview-probability-page .secondary-button {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--foreground);
+}
+
+.interview-probability-page .primary-button:hover,
+.interview-probability-page .secondary-button:hover {
+  transform: translateY(-2px);
+}
+
+/* ================================
+   HERO
+================================ */
+
+.probability-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+
+  gap: 30px;
+
+  padding: 28px;
+  margin-bottom: 16px;
+
+  border: 1px solid rgba(112, 87, 232, 0.13);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 87, 232, 0.045),
+      #ffffff
+    );
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.probability-score-area {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.probability-ring {
+  width: 150px;
+  height: 150px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background:
+    conic-gradient(
+      var(--primary) 0deg 281deg,
+      #eeecf3 281deg 360deg
+    );
+}
+
+.probability-ring-inner {
+  width: 116px;
+  height: 116px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+.probability-ring-inner strong {
+  font-size: 38px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+.probability-ring-inner span {
+  margin-left: 2px;
+  margin-top: 15px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.probability-result h2 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 850;
+
+  letter-spacing: -0.04em;
+}
+
+.probability-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 12px;
+  padding: 7px 10px;
+
+  border-radius: 8px;
+
+  background: rgba(75, 198, 165, 0.09);
+
+  color: #399f84;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.probability-status span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #4bc6a5;
+}
+
+.probability-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding-left: 28px;
+
+  border-left: 1px solid var(--border);
+}
+
+.probability-message > p {
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.probability-meta {
+  display: flex;
+  gap: 30px;
+
+  margin-top: 20px;
+  padding-top: 14px;
+
+  border-top: 1px solid var(--border);
+}
+
+.probability-meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.probability-meta span {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.probability-meta strong {
+  color: var(--foreground);
+  font-size: 10px;
+}
+
+/* ================================
+   BREAKDOWN
+================================ */
+
+.probability-breakdown {
+  padding: 24px;
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.interview-probability-page .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.interview-probability-page .section-header h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.section-count {
+  padding: 6px 10px;
+
+  border-radius: 8px;
+
+  background: #f7f6fa;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.factor-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 0 25px;
+}
+
+.factor-item {
+  padding: 20px 0;
+
+  border-bottom: 1px solid #f0eef4;
+}
+
+.factor-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.factor-top h3 {
+  margin: 0;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.factor-top p {
+  margin: 5px 0 0;
+
+  color: var(--muted);
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.factor-top strong {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.factor-progress {
+  width: 100%;
+  height: 6px;
+
+  margin-top: 13px;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  background: #f0eef5;
+}
+
+.factor-progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: var(--primary);
+}
+
+/* ================================
+   SCALE
+================================ */
+
+.probability-scale-card {
+  padding: 24px;
+  margin-bottom: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.scale {
+  padding: 30px 8px 0;
+}
+
+.scale-track {
+  position: relative;
+
+  width: 100%;
+  height: 8px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      to right,
+      #e9b15f 0%,
+      #e9b15f 35%,
+      #d8c65c 35%,
+      #d8c65c 60%,
+      #69bea0 60%,
+      #69bea0 80%,
+      #4cae91 80%,
+      #4cae91 100%
+    );
+}
+
+.scale-fill {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 78%;
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: rgba(112, 87, 232, 0.12);
+}
+
+.scale-marker {
+  position: absolute;
+
+  left: 78%;
+  top: 50%;
+
+  width: 17px;
+  height: 17px;
+
+  transform: translate(-50%, -50%);
+
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+
+  background: var(--primary);
+
+  box-shadow: 0 3px 10px rgba(47, 38, 88, 0.16);
+}
+
+.scale-marker span {
+  position: absolute;
+
+  left: 50%;
+  bottom: 23px;
+
+  transform: translateX(-50%);
+
+  padding: 5px 7px;
+
+  border-radius: 6px;
+
+  background: var(--foreground);
+  color: #ffffff;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 13px;
+
+  color: var(--muted);
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.scale-message {
+  margin: 24px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.scale-message strong {
+  color: var(--foreground);
+}
+
+/* ================================
+   RECOMMENDATIONS
+================================ */
+
+.probability-recommendations {
+  padding: 24px;
+  margin-bottom: 16px;
+
+  border: 1px solid rgba(112, 87, 232, 0.12);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 87, 232, 0.035),
+      #ffffff
+    );
+}
+
+.recommendation-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.recommendation-icon {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  background: rgba(112, 87, 232, 0.09);
+
+  color: var(--primary);
+
+  font-size: 16px;
+}
+
+.recommendation-heading h2 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.recommendation-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  padding: 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background: #ffffff;
+}
+
+.recommendation-item > span {
+  width: 22px;
+  height: 22px;
+
+  display: grid;
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 7px;
+
+  background: #f3f1f9;
+
+  color: var(--primary);
+
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.recommendation-item p {
+  margin: 2px 0 0;
+
+  color: var(--muted);
+
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ================================
+   ACTION
+================================ */
+
+.probability-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  padding: 24px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  box-shadow: 0 8px 30px rgba(47, 38, 88, 0.035);
+}
+
+.probability-action > div:first-child {
+  max-width: 650px;
+}
+
+.probability-action h2 {
+  margin: 0;
+
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.probability-action p:not(.card-label) {
+  margin: 8px 0 0;
+
+  color: var(--muted);
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 9px;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 950px) {
+  .probability-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .probability-message {
+    padding-left: 0;
+    padding-top: 20px;
+
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .factor-list {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .interview-probability-page {
+    padding: 24px 18px 40px;
+  }
+
+  .interview-probability-page .feature-header {
+    flex-direction: column;
+  }
+
+  .interview-probability-page .feature-header > .secondary-button {
+    width: 100%;
+  }
+
+  .probability-hero,
+  .probability-breakdown,
+  .probability-scale-card,
+  .probability-recommendations,
+  .probability-action {
+    padding: 18px;
+    border-radius: 15px;
+  }
+
+  .probability-score-area {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .probability-ring {
+    width: 125px;
+    height: 125px;
+  }
+
+  .probability-ring-inner {
+    width: 97px;
+    height: 97px;
+  }
+
+  .probability-ring-inner strong {
+    font-size: 32px;
+  }
+
+  .probability-result h2 {
+    font-size: 21px;
+  }
+
+  .probability-action {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .action-buttons .primary-button,
+  .action-buttons .secondary-button {
+    width: 100%;
+  }
+}
