@@ -16,6 +16,16 @@
 --primary-foreground: #ffffff;
 }
 
+html[data-theme="dark"] {
+  --background: #171526;
+  --foreground: #f5f2ff;
+  --muted: #aaa5bd;
+  --border: #3a3450;
+  --card: rgba(34, 30, 54, 0.94);
+  --muted-foreground: #aaa5bd;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

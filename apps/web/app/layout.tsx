@@ -13,8 +13,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => { const theme = localStorage.getItem("career-agent-theme"); document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light"; })()`,
+          }}
+        />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

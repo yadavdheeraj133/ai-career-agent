@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { initials } from "@/lib/format";
-import type { AppNotification } from "@/lib/types";
+import type { AppNotification, Job } from "@/lib/types";
 
 export default function Header() {
   const [darkMode, setDarkMode] = useState(false);
@@ -13,25 +14,76 @@ export default function Header() {
   const [unread, setUnread] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<Job[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const displayName = user?.name?.trim() || "there";
   const firstName = displayName.split(/\s+/)[0];
 
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("career-agent-theme");
+    const isDark = savedTheme === "dark";
+    setDarkMode(isDark);
+    document.documentElement.dataset.theme = isDark ? "dark" : "light";
+  }, []);
+
   const toggleTheme = () => {
-    setDarkMode((prev) => !prev);
+    setDarkMode((prev) => {
+      const next = !prev;
+      document.documentElement.dataset.theme = next ? "dark" : "light";
+      window.localStorage.setItem("career-agent-theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
+  const runSearch = async () => {
+    const keyword = search.trim();
+    if (!keyword) {
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchError(null);
+
+    try {
+      const response = await apiRequest<Job[] | { data: Job[] }>(
+        `/api/jobs/search?keyword=${encodeURIComponent(keyword)}`
+      );
+      setSearchResults(
+        Array.isArray(response.data) ? response.data : response.data.data
+      );
+    } catch (caught) {
+      setSearchError(
+        caught instanceof Error ? caught.message : "Unable to search jobs."
+      );
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const loadNotifications = useCallback(async () => {
     setNotificationsLoading(true);
+    setNotificationsError(null);
     try {
       const response = await apiRequest<AppNotification[]>(
         "/api/notifications?limit=8"
       );
       setNotifications(response.data ?? []);
       setUnread((response as { unread?: number }).unread ?? 0);
-    } catch {
-      // The bell must never break the dashboard if the API is unavailable.
+    } catch (caught) {
+      setNotificationsError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to load notifications."
+      );
     } finally {
       setNotificationsLoading(false);
     }
@@ -100,9 +152,54 @@ export default function Header() {
           type="button"
           className="header-icon-button"
           aria-label="Search"
+          aria-expanded={searchOpen}
+          onClick={() => setSearchOpen((prev) => !prev)}
         >
           <span>⌕</span>
         </button>
+
+        {searchOpen && (
+          <div className="header-search-panel">
+            <form
+              className="header-search-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void runSearch();
+              }}
+            >
+              <input
+                autoFocus
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search jobs..."
+                aria-label="Search jobs"
+              />
+              <button type="submit" aria-label="Run search">⌕</button>
+            </form>
+
+            <div className="header-search-results">
+              {searchLoading ? (
+                <p className="header-notification-empty">Searching…</p>
+              ) : searchError ? (
+                <p className="header-search-error">{searchError}</p>
+              ) : search.trim() && searchResults.length === 0 ? (
+                <p className="header-notification-empty">No jobs found.</p>
+              ) : (
+                searchResults.map((job) => (
+                  <Link
+                    key={job.id}
+                    href={`/jobs/${job.id}`}
+                    className="header-search-result"
+                    onClick={() => setSearchOpen(false)}
+                  >
+                    <strong>{job.title}</strong>
+                    <span>{job.company} · {job.location}</span>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="header-notification">
           <button
@@ -128,7 +225,9 @@ export default function Header() {
               </div>
 
               <div className="header-notification-list">
-                {notifications.length === 0 ? (
+                {notificationsError ? (
+                  <p className="header-search-error">{notificationsError}</p>
+                ) : notifications.length === 0 ? (
                   <p className="header-notification-empty">
                     {notificationsLoading
                       ? "Loading notifications…"
