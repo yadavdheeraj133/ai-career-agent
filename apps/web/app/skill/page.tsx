@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { apiRequest, ApiError } from "@/lib/api";
-import type { Resume } from "@/lib/types";
+import { apiRequest } from "@/lib/api";
 
 const suggestedSkills = [
   "JavaScript",
@@ -16,45 +15,35 @@ const suggestedSkills = [
   "TypeScript",
 ];
 
-const RESUME_TITLE = "My Resume";
-
-function normalizeSkills(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((skill): skill is string => typeof skill === "string")
-    : [];
+interface Skill {
+  id: string;
+  name: string;
 }
 
 export default function SkillsPage() {
-  const [skills, setSkills] = useState<string[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const hasResume = useRef(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSkills() {
       try {
-        const response = await apiRequest<Resume>("/resume");
+        const response = await apiRequest<Skill[]>("/api/skills");
 
         if (cancelled) return;
 
-        hasResume.current = true;
-        setSkills(normalizeSkills(response.data.skills));
+        setSkills(response.data);
       } catch (caught) {
         if (cancelled) return;
 
-        if (caught instanceof ApiError && caught.status === 404) {
-          hasResume.current = false;
-          setSkills([]);
-        } else {
-          setError(
-            caught instanceof Error ? caught.message : "Unable to load your skills."
-          );
-        }
+        setError(
+          caught instanceof Error ? caught.message : "Unable to load your skills."
+        );
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -67,64 +56,63 @@ export default function SkillsPage() {
     };
   }, []);
 
-  const commit = useCallback(
-    async (next: string[], previous: string[]) => {
-      setSkills(next);
-      setError(null);
-      setSaving(true);
-
-      try {
-        if (hasResume.current) {
-          await apiRequest<Resume>("/resume", {
-            method: "PATCH",
-            body: { skills: next },
-          });
-        } else {
-          await apiRequest<Resume>("/resume", {
-            method: "POST",
-            body: { title: RESUME_TITLE, skills: next },
-          });
-          hasResume.current = true;
-        }
-      } catch (caught) {
-        setSkills(previous);
-        setError(
-          caught instanceof Error ? caught.message : "Unable to save your skills."
-        );
-      } finally {
-        setSaving(false);
-      }
-    },
-    []
-  );
-
-  const addSkill = (skill: string) => {
+  const addSkill = async (skill: string) => {
     const trimmedSkill = skill.trim();
 
     if (!trimmedSkill || saving) return;
 
     const alreadyExists = skills.some(
-      (item) => item.toLowerCase() === trimmedSkill.toLowerCase(),
+      (item) => item.name.toLowerCase() === trimmedSkill.toLowerCase(),
     );
 
     if (alreadyExists) return;
 
     setSearch("");
-    void commit([...skills, trimmedSkill], skills);
+    setSuccess(null);
+    setError(null);
+    setSaving(true);
+
+    try {
+      const response = await apiRequest<Skill>("/api/skills", {
+        method: "POST",
+        body: { name: trimmedSkill },
+      });
+      setSkills((current) => [...current, response.data]);
+      setSuccess("Skill saved.");
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Unable to save your skill."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const removeSkill = (skill: string) => {
+  const removeSkill = async (skill: Skill) => {
     if (saving) return;
 
-    void commit(
-      skills.filter((item) => item !== skill),
-      skills
-    );
+    setSuccess(null);
+    setError(null);
+    setSaving(true);
+
+    try {
+      await apiRequest(`/api/skills/${skill.id}`, { method: "DELETE" });
+      setSkills((current) => current.filter((item) => item.id !== skill.id));
+      setSuccess("Skill removed.");
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Unable to remove your skill."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const hasSkills = skills.length > 0;
 
   const filteredSuggestions = suggestedSkills.filter(
     (skill) =>
-      !skills.includes(skill) &&
+      !skills.some((item) => item.name.toLowerCase() === skill.toLowerCase()) &&
       skill.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -155,7 +143,7 @@ export default function SkillsPage() {
             onKeyDown={(event) => {
               if (event.key === "Enter") {
                 event.preventDefault();
-                addSkill(search);
+                void addSkill(search);
               }
             }}
           />
@@ -163,13 +151,14 @@ export default function SkillsPage() {
           <button
             type="button"
             aria-label="Add skill"
-            onClick={() => addSkill(search)}
+            onClick={() => void addSkill(search)}
           >
             +
           </button>
         </div>
 
         {error ? <p className="form-error">{error}</p> : null}
+        {success ? <p className="form-notice">{success}</p> : null}
         {loading ? (
           <p className="form-notice">Loading your skills…</p>
         ) : null}
@@ -184,7 +173,7 @@ export default function SkillsPage() {
                 key={skill}
                 type="button"
                 className="skill-suggestion"
-                onClick={() => addSkill(skill)}
+                onClick={() => void addSkill(skill)}
               >
                 {skill}
               </button>
@@ -194,7 +183,7 @@ export default function SkillsPage() {
               <button
                 type="button"
                 className="skill-suggestion skill-add-suggestion"
-                onClick={() => addSkill(search)}
+                onClick={() => void addSkill(search)}
               >
                 Add &quot;{search.trim()}&quot;
               </button>
@@ -207,18 +196,21 @@ export default function SkillsPage() {
 
           <div className="selected-skills">
             {skills.map((skill) => (
-              <span key={skill} className="selected-skill">
-                {skill}
+              <span key={skill.id} className="selected-skill">
+                {skill.name}
 
                 <button
                   type="button"
-                  aria-label={`Remove ${skill}`}
-                  onClick={() => removeSkill(skill)}
+                  aria-label={`Remove ${skill.name}`}
+                  onClick={() => void removeSkill(skill)}
                 >
                   ×
                 </button>
               </span>
             ))}
+            {!loading && !hasSkills ? (
+              <span className="form-notice">No skills added yet.</span>
+            ) : null}
           </div>
         </div>
 

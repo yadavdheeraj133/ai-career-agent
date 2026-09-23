@@ -1,3 +1,4 @@
+import skillRoutes from "../routes/skill.route.js";
 import { Router } from "express";
 import authRoutes from "../routes/auth.routes.js";
 import { errorHandler } from "../middlewares/error.middleware.js";
@@ -37,6 +38,7 @@ router.use("/api/preferences",userPreferencesRoutes);
 router.use("/users/settings",userSettingsRoutes);
 router.use("/api/dashboard",dashboardRoutes);
 router.use("/api/notifications",notificationRoutes);
+router.use("/api/skills", skillRoutes);
 // Error handler should be last
 router.use(errorHandler);
 
