@@ -38,6 +38,11 @@ const navigationItems = [
     icon: "↗",
     href: "/dashboard/career",
   },
+  {
+    label: "Settings",
+    icon: "⚙",
+    href: "/setting",
+  },
 ];
 
 export default function Sidebar() {
@@ -78,17 +83,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-bottom">
-        <Link
-          href="/dashboard/settings"
-          className="sidebar-item"
-        >
-          <span className="sidebar-icon">⚙</span>
-
-          <span className="sidebar-item-text">
-            Settings
-          </span>
-        </Link>
-
+       
         <div className="sidebar-agent-status">
           <span className="agent-status-dot" />
 

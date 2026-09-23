@@ -15,6 +15,8 @@ import jobBookmarkRoutes from "./job-bookmark.route.js";
 import jobApplicationRoutes from "./job-application.route.js";
 import userPreferencesRoutes from "./user-preference.routes.js";
 import userSettingsRoutes from "./user-settings.route.js";
+import dashboardRoutes from "./dashboard.route.js";
+import notificationRoutes from "./notifications.route.js";
 
 const router:Router = Router();
 
@@ -33,6 +35,8 @@ router.use("/api/jobs", jobBookmarkRoutes);
 router.use("/api/jobs", jobApplicationRoutes);
 router.use("/api/preferences",userPreferencesRoutes);
 router.use("/users/settings",userSettingsRoutes);
+router.use("/api/dashboard",dashboardRoutes);
+router.use("/api/notifications",notificationRoutes);
 // Error handler should be last
 router.use(errorHandler);
 

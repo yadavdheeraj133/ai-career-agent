@@ -36,13 +36,17 @@ export class UserSettingsController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserSettingsInput = {
-        emailNotifications:
-          req.body.emailNotifications,
-        jobAlerts: req.body.jobAlerts,
-        applicationUpdates:
-          req.body.applicationUpdates,
-      };
+      const data: UserSettingsInput = {};
+
+      if (typeof req.body.emailNotifications === "boolean") {
+        data.emailNotifications = req.body.emailNotifications;
+      }
+      if (typeof req.body.jobAlerts === "boolean") {
+        data.jobAlerts = req.body.jobAlerts;
+      }
+      if (typeof req.body.applicationUpdates === "boolean") {
+        data.applicationUpdates = req.body.applicationUpdates;
+      }
 
       const settings =
         await userSettingsService.createSettings(
@@ -66,13 +70,25 @@ export class UserSettingsController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserSettingsInput = {
-        emailNotifications:
-          req.body.emailNotifications,
-        jobAlerts: req.body.jobAlerts,
-        applicationUpdates:
-          req.body.applicationUpdates,
-      };
+      const data: UserSettingsInput = {};
+
+      if (typeof req.body.emailNotifications === "boolean") {
+        data.emailNotifications = req.body.emailNotifications;
+      }
+      if (typeof req.body.jobAlerts === "boolean") {
+        data.jobAlerts = req.body.jobAlerts;
+      }
+      if (typeof req.body.applicationUpdates === "boolean") {
+        data.applicationUpdates = req.body.applicationUpdates;
+      }
+
+      if (Object.keys(data).length === 0) {
+        res.status(400).json({
+          success: false,
+          message: "At least one field must be provided for update.",
+        });
+        return;
+      }
 
       const settings =
         await userSettingsService.updateSettings(

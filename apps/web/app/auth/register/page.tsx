@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 
+import { API_BASE_URL } from "@/lib/api";
+
 export default function RegisterPage() {
+  function handleLinkedInLogin() {
+    window.location.href = `${API_BASE_URL}/auth/linkedin`;
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-card">
@@ -21,7 +27,11 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <button className="linkedin-button" type="button">
+        <button
+          className="linkedin-button"
+          type="button"
+          onClick={handleLinkedInLogin}
+        >
           <span className="linkedin-icon">in</span>
           Continue with LinkedIn
         </button>
@@ -30,14 +40,14 @@ export default function RegisterPage() {
           <span>OR</span>
         </div>
 
-        <Link href="/register/manual" className="manual-button">
+        <Link href="/auth/register/manual" className="manual-button">
           <span>Register manually</span>
           <span>→</span>
         </Link>
 
         <p className="auth-footer">
           Already have an account?{" "}
-          <Link href="/login">Log in</Link>
+          <Link href="/auth/login">Log in</Link>
         </p>
       </section>
     </main>

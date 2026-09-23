@@ -1,6 +1,7 @@
 import {
   aiService,
   responseParser,
+  schemaValidator,
 } from "../ai/services/index.js";
 
 import * as InterviewPrompts from "../ai/prompts/interview/index.js";
@@ -35,7 +36,7 @@ export class InterviewAIService {
         response.content
       );
 
-    return InterviewPreparationSchema.parse(parsed);
+    return schemaValidator.validate(InterviewPreparationSchema, parsed);
   }
 
   async generateJobSummary(
@@ -56,7 +57,7 @@ export class InterviewAIService {
         response.content
       );
 
-    return JobSummarySchema.parse(parsed);
+    return schemaValidator.validate(JobSummarySchema, parsed);
   }
 
   async generateCompanyInsight(
@@ -77,7 +78,7 @@ export class InterviewAIService {
         response.content
       );
 
-    return CompanyInsightSchema.parse(parsed);
+    return schemaValidator.validate(CompanyInsightSchema, parsed);
   }
 }
 

@@ -3,6 +3,7 @@
 import {
   aiService,
   responseParser,
+  schemaValidator,
 } from "../ai/services/index.js";
 
 import * as ResumePrompts from "../ai/prompts/resume/index.js";
@@ -49,7 +50,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return ResumeAnalysisSchema.parse(parsed);
+    return schemaValidator.validate(ResumeAnalysisSchema, parsed);
   }
 
   async analyzeATS(
@@ -77,7 +78,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return ATSSchema.parse(parsed);
+    return schemaValidator.validate(ATSSchema, parsed);
   }
 
   async analyzeSkillGap(
@@ -105,7 +106,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return SkillGapSchema.parse(parsed);
+    return schemaValidator.validate(SkillGapSchema, parsed);
   }
 
   async tailorResume(
@@ -133,7 +134,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return ResumeTailorSchema.parse(parsed);
+    return schemaValidator.validate(ResumeTailorSchema, parsed);
   }
 
   async matchResumeWithJob(
@@ -161,7 +162,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return ResumeJobMatchSchema.parse(parsed);
+    return schemaValidator.validate(ResumeJobMatchSchema, parsed);
   }
 
   async generateAIVerdict(
@@ -189,7 +190,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return AIVerdictSchema.parse(parsed);
+    return schemaValidator.validate(AIVerdictSchema, parsed);
   }
 
   async calculateInterviewProbability(
@@ -217,7 +218,7 @@ export class CareerAIService {
     console.log("======================================");
     console.log(JSON.stringify(parsed, null, 2));
 
-    return InterviewProbabilitySchema.parse(parsed);
+    return schemaValidator.validate(InterviewProbabilitySchema, parsed);
   }
 }
 

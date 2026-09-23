@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+
+import { apiRequest, ApiError } from "@/lib/api";
+import type { Resume } from "@/lib/types";
 
 const suggestedSkills = [
   "JavaScript",
@@ -13,21 +16,92 @@ const suggestedSkills = [
   "TypeScript",
 ];
 
-export default function SkillsPage() {
-  const [skills, setSkills] = useState<string[]>([
-    "JavaScript",
-    "React",
-    "Node.js",
-    "TypeScript",
-    "PostgreSQL",
-  ]);
+const RESUME_TITLE = "My Resume";
 
+function normalizeSkills(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((skill): skill is string => typeof skill === "string")
+    : [];
+}
+
+export default function SkillsPage() {
+  const [skills, setSkills] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const hasResume = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSkills() {
+      try {
+        const response = await apiRequest<Resume>("/resume");
+
+        if (cancelled) return;
+
+        hasResume.current = true;
+        setSkills(normalizeSkills(response.data.skills));
+      } catch (caught) {
+        if (cancelled) return;
+
+        if (caught instanceof ApiError && caught.status === 404) {
+          hasResume.current = false;
+          setSkills([]);
+        } else {
+          setError(
+            caught instanceof Error ? caught.message : "Unable to load your skills."
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadSkills();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const commit = useCallback(
+    async (next: string[], previous: string[]) => {
+      setSkills(next);
+      setError(null);
+      setSaving(true);
+
+      try {
+        if (hasResume.current) {
+          await apiRequest<Resume>("/resume", {
+            method: "PATCH",
+            body: { skills: next },
+          });
+        } else {
+          await apiRequest<Resume>("/resume", {
+            method: "POST",
+            body: { title: RESUME_TITLE, skills: next },
+          });
+          hasResume.current = true;
+        }
+      } catch (caught) {
+        setSkills(previous);
+        setError(
+          caught instanceof Error ? caught.message : "Unable to save your skills."
+        );
+      } finally {
+        setSaving(false);
+      }
+    },
+    []
+  );
 
   const addSkill = (skill: string) => {
     const trimmedSkill = skill.trim();
 
-    if (!trimmedSkill) return;
+    if (!trimmedSkill || saving) return;
 
     const alreadyExists = skills.some(
       (item) => item.toLowerCase() === trimmedSkill.toLowerCase(),
@@ -35,12 +109,17 @@ export default function SkillsPage() {
 
     if (alreadyExists) return;
 
-    setSkills((current) => [...current, trimmedSkill]);
     setSearch("");
+    void commit([...skills, trimmedSkill], skills);
   };
 
   const removeSkill = (skill: string) => {
-    setSkills((current) => current.filter((item) => item !== skill));
+    if (saving) return;
+
+    void commit(
+      skills.filter((item) => item !== skill),
+      skills
+    );
   };
 
   const filteredSuggestions = suggestedSkills.filter(
@@ -89,6 +168,12 @@ export default function SkillsPage() {
             +
           </button>
         </div>
+
+        {error ? <p className="form-error">{error}</p> : null}
+        {loading ? (
+          <p className="form-notice">Loading your skills…</p>
+        ) : null}
+        {saving ? <p className="form-notice">Saving…</p> : null}
 
         <div className="skill-section">
           <div className="skill-section-title">Suggested</div>

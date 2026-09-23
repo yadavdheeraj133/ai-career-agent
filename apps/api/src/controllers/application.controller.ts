@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from "express";
 
 import { applicationAIService } from "../services/application-ai.service.js";
 
+const MAX_INPUT_LENGTH = 50000;
+
+function requireString(value: unknown, maxLength = MAX_INPUT_LENGTH): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
+}
+
 export class ApplicationController {
   async generateCoverLetter(
     req: Request,
@@ -10,6 +16,14 @@ export class ApplicationController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await applicationAIService.generateCoverLetter(
@@ -41,6 +55,14 @@ export class ApplicationController {
         candidateName,
         platform,
       } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await applicationAIService.generateApplicationMessage(
@@ -74,6 +96,14 @@ export class ApplicationController {
         resume,
         jobDescription,
       } = req.body;
+
+      if (!requireString(question) || !requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "question, resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await applicationAIService.generateApplicationAnswer(

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { authRepository } from "../repositories/auth.repository.js";
+import { env } from "../config/env.js";
 
 interface TokenPayload extends JwtPayload {
   userId: string;
@@ -37,13 +38,7 @@ if (!token) {
   });
 }
 
-    const JWT_SECRET = process.env.JWT_SECRET;
-
-    if (!JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, env.JWT_SECRET);
 
     if (typeof decoded === "string") {
       return res.status(401).json({

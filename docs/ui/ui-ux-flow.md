@@ -13,8 +13,30 @@ http://localhost:3000/auth/register
 http://localhost:3000/auth/forgot-password
 http://localhost:3000/skill
 http://localhost:3000/dashboard
-
-
+http://localhost:3000/features/resume/analysis
+http://localhost:3000/features/resume/ats
+http://localhost:3000/features/resume/skill-gap
+http://localhost:3000/features/resume/tailor
+http://localhost:3000/features/resume/job-match
+http://localhost:3000/features/ai-tools/verdict
+http://localhost:3000/features/ai-tools/interview-probability
+http://localhost:3000/features/ai-tools/missing-skills
+http://localhost:3000/features/ai-tools/job-summary
+http://localhost:3000/features/ai-tools/company-insights
+http://localhost:3000/features/applications/cover-letter
+http://localhost:3000/features/applications/answers
+http://localhost:3000/features/applications/message
+http://localhost:3000/features/interview
+http://localhost:3000/features/career/coach
+http://localhost:3000/features/career/roadmap
+http://localhost:3000/features/career/learning-path
+http://localhost:3000/setting
+http://localhost:3000/setting/appearance
+http://localhost:3000/setting/preferences
+http://localhost:3000/setting/ai
+http://localhost:3000/setting/jobs
+http://localhost:3000/setting/notifications
+http://localhost:3000/setting/security
 
 # 1. Product Overview
 

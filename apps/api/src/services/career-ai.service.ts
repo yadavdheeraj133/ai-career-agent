@@ -1,6 +1,7 @@
 import {
   aiService,
   responseParser,
+  schemaValidator,
 } from "../ai/services/index.js";
 
 import * as CareerPrompts from "../ai/prompts/career/index.js";
@@ -42,7 +43,7 @@ export class CareerGuidanceAIService {
         response.content
       );
 
-    return CareerCoachSchema.parse(parsed);
+    return schemaValidator.validate(CareerCoachSchema, parsed);
   }
 
   async generateCareerRoadmap(
@@ -67,7 +68,7 @@ export class CareerGuidanceAIService {
         response.content
       );
 
-    return CareerRoadmapSchema.parse(parsed);
+    return schemaValidator.validate(CareerRoadmapSchema, parsed);
   }
 
   async generateLearningPath(
@@ -90,7 +91,7 @@ export class CareerGuidanceAIService {
         response.content
       );
 
-    return LearningPathSchema.parse(parsed);
+    return schemaValidator.validate(LearningPathSchema, parsed);
   }
 
   async matchResumeWithJob(
@@ -113,7 +114,7 @@ export class CareerGuidanceAIService {
         response.content
       );
 
-    return ResumeJobMatchSchema.parse(parsed);
+    return schemaValidator.validate(ResumeJobMatchSchema, parsed);
   }
 }
 

@@ -6,6 +6,12 @@ import {
 
 import { interviewAIService } from "../services/interview-ai.service.js";
 
+const MAX_INPUT_LENGTH = 50000;
+
+function requireString(value: unknown, maxLength = MAX_INPUT_LENGTH): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
+}
+
 export class InterviewController {
   async prepareInterview(
     req: Request,
@@ -14,6 +20,14 @@ export class InterviewController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await interviewAIService.prepareInterview(
@@ -40,6 +54,14 @@ export class InterviewController {
     try {
       const { jobDescription } = req.body;
 
+      if (!requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "jobDescription is required and must be a non-empty string.",
+        });
+        return;
+      }
+
       const result =
         await interviewAIService.generateJobSummary(
           jobDescription
@@ -63,6 +85,14 @@ export class InterviewController {
   ): Promise<void> {
     try {
       const { companyInformation } = req.body;
+
+      if (!requireString(companyInformation)) {
+        res.status(400).json({
+          success: false,
+          message: "companyInformation is required and must be a non-empty string.",
+        });
+        return;
+      }
 
       const result =
         await interviewAIService.generateCompanyInsight(

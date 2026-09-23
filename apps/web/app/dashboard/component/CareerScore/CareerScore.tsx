@@ -1,6 +1,39 @@
-export default function CareerScore() {
-  const score = 85;
+interface CareerScoreProps {
+  score: number;
+  skills: number;
+  resume: number;
+  marketFit: number;
+}
 
+function badgeFor(score: number): string {
+  if (score >= 80) return "Excellent";
+  if (score >= 60) return "Good";
+  if (score >= 40) return "Fair";
+  return "Getting started";
+}
+
+function summaryFor(score: number): string {
+  if (score >= 80) {
+    return "Your profile is looking strong. Your skills, resume and career direction are well aligned with your target role.";
+  }
+
+  if (score >= 60) {
+    return "You have a solid base. Filling a few gaps will push your matches higher.";
+  }
+
+  if (score >= 40) {
+    return "Your profile is taking shape. Add skills and preferences to improve your matches.";
+  }
+
+  return "Complete your profile to start measuring your career health.";
+}
+
+export default function CareerScore({
+  score,
+  skills,
+  resume,
+  marketFit,
+}: CareerScoreProps) {
   return (
     <section className="career-score-card">
       <div className="career-score-content">
@@ -14,7 +47,7 @@ export default function CareerScore() {
           </div>
 
           <span className="career-score-badge">
-            Excellent
+            {badgeFor(score)}
           </span>
         </div>
 
@@ -34,29 +67,26 @@ export default function CareerScore() {
           </div>
 
           <div className="career-score-summary">
-            <strong>Your profile is looking strong.</strong>
+            <strong>{summaryFor(score).split(".")[0]}.</strong>
 
-            <p>
-              Your skills, resume and career direction are
-              well aligned with your current target role.
-            </p>
+            <p>{summaryFor(score)}</p>
           </div>
         </div>
 
         <div className="career-score-metrics">
           <div>
             <span>Skills</span>
-            <strong>92</strong>
+            <strong>{skills}</strong>
           </div>
 
           <div>
             <span>Resume</span>
-            <strong>91</strong>
+            <strong>{resume}</strong>
           </div>
 
           <div>
             <span>Market Fit</span>
-            <strong>78</strong>
+            <strong>{marketFit}</strong>
           </div>
         </div>
       </div>

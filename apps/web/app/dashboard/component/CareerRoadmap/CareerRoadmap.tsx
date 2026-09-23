@@ -1,27 +1,10 @@
-const roadmapSteps = [
-  {
-    title: "Junior Developer",
-    status: "completed",
-    description: "Foundation established",
-  },
-  {
-    title: "Mid-Level Developer",
-    status: "current",
-    description: "You are here",
-  },
-  {
-    title: "Senior Developer",
-    status: "upcoming",
-    description: "Build advanced expertise",
-  },
-  {
-    title: "Tech Lead",
-    status: "upcoming",
-    description: "Lead teams and systems",
-  },
-];
+import Link from "next/link";
 
-export default function CareerRoadmap() {
+interface CareerRoadmapProps {
+  targetRole: string | null;
+}
+
+export default function CareerRoadmap({ targetRole }: CareerRoadmapProps) {
   return (
     <section className="career-roadmap">
       <div className="section-heading">
@@ -31,10 +14,10 @@ export default function CareerRoadmap() {
           <h2>Career Roadmap</h2>
         </div>
 
-        <button type="button" className="roadmap-view-button">
+        <Link href="/features/career/roadmap" className="roadmap-view-button">
           View full roadmap
           <span>→</span>
-        </button>
+        </Link>
       </div>
 
       <div className="roadmap-card">
@@ -42,41 +25,15 @@ export default function CareerRoadmap() {
           <div>
             <span className="roadmap-label">CURRENT TARGET</span>
 
-            <h3>Senior Full Stack Developer</h3>
-          </div>
-
-          <div className="roadmap-progress">
-            <strong>62%</strong>
-            <span>progress</span>
+            <h3>{targetRole ?? "Set your target role"}</h3>
           </div>
         </div>
 
-        <div className="roadmap-track">
-          {roadmapSteps.map((step, index) => (
-            <div
-              className={`roadmap-step ${step.status}`}
-              key={step.title}
-            >
-              <div className="roadmap-marker">
-                {step.status === "completed"
-                  ? "✓"
-                  : step.status === "current"
-                    ? "●"
-                    : ""}
-              </div>
-
-              <div className="roadmap-step-content">
-                <strong>{step.title}</strong>
-
-                <span>{step.description}</span>
-              </div>
-
-              {index < roadmapSteps.length - 1 && (
-                <div className="roadmap-connector" />
-              )}
-            </div>
-          ))}
-        </div>
+        <p className="form-notice">
+          {targetRole
+            ? "Generate an AI roadmap to map the steps between where you are and your target role."
+            : "Add a target role in your preferences to generate a personalised roadmap."}
+        </p>
 
         <div className="roadmap-next">
           <div className="roadmap-next-icon">✦</div>
@@ -85,10 +42,23 @@ export default function CareerRoadmap() {
             <span>AI RECOMMENDATION</span>
 
             <p>
-              Focus on system design and advanced backend
-              architecture to move toward your next stage.
+              Your AI agent can outline the skills and experience to
+              focus on next. Generate a roadmap to get started.
             </p>
           </div>
+        </div>
+
+        <div className="tab-panel-actions">
+          {!targetRole ? (
+            <Link href="/dashboard/career" className="secondary-button">
+              Set preferences
+            </Link>
+          ) : null}
+
+          <Link href="/features/career/roadmap" className="primary-button">
+            Generate roadmap
+            <span>→</span>
+          </Link>
         </div>
       </div>
     </section>

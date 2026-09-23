@@ -79,4 +79,7 @@ export const createResumeSchema = z.object({
   isDefault: z.boolean().optional(),
 });
 
+export const updateResumeSchema = createResumeSchema.partial();
+
 export type CreateResumeInput = z.infer<typeof createResumeSchema>;
+export type UpdateResumeInput = z.infer<typeof updateResumeSchema>;

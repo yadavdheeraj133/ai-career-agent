@@ -36,13 +36,23 @@ export class UserPreferencesController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserPreferencesInput = {
-        jobRole: req.body.jobRole,
-        location: req.body.location,
-        workMode: req.body.workMode,
-        jobType: req.body.jobType,
-        salary: req.body.salary,
-      };
+      const data: UserPreferencesInput = {};
+
+      if (typeof req.body.jobRole === "string") {
+        data.jobRole = req.body.jobRole;
+      }
+      if (typeof req.body.location === "string") {
+        data.location = req.body.location;
+      }
+      if (typeof req.body.workMode === "string") {
+        data.workMode = req.body.workMode;
+      }
+      if (typeof req.body.jobType === "string") {
+        data.jobType = req.body.jobType;
+      }
+      if (typeof req.body.salary === "string") {
+        data.salary = req.body.salary;
+      }
 
       const preferences =
         await userPreferencesService.createPreferences(
@@ -66,13 +76,31 @@ export class UserPreferencesController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserPreferencesInput = {
-        jobRole: req.body.jobRole,
-        location: req.body.location,
-        workMode: req.body.workMode,
-        jobType: req.body.jobType,
-        salary: req.body.salary,
-      };
+      const data: UserPreferencesInput = {};
+
+      if (typeof req.body.jobRole === "string") {
+        data.jobRole = req.body.jobRole;
+      }
+      if (typeof req.body.location === "string") {
+        data.location = req.body.location;
+      }
+      if (typeof req.body.workMode === "string") {
+        data.workMode = req.body.workMode;
+      }
+      if (typeof req.body.jobType === "string") {
+        data.jobType = req.body.jobType;
+      }
+      if (typeof req.body.salary === "string") {
+        data.salary = req.body.salary;
+      }
+
+      if (Object.keys(data).length === 0) {
+        res.status(400).json({
+          success: false,
+          message: "At least one field must be provided for update.",
+        });
+        return;
+      }
 
       const preferences =
         await userPreferencesService.updatePreferences(

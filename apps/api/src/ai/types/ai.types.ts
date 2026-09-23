@@ -6,7 +6,10 @@
  * ------------------------------------------------------------------
  */
 
-export type AIProviderName = "ollama" | "openrouter";
+export type AIProviderName =
+  | "agent-router"
+  | "ollama"
+  | "openrouter";
 
 export interface AIRequest {
   systemPrompt?: string;

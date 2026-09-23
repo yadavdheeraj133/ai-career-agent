@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const ATSSectionAnalysisSchema = z.object({
+  title: z.string(),
+  summary: z.string(),
+  experience: z.string(),
+  projects: z.string(),
+  skills: z.string(),
+  education: z.string(),
+  certifications: z.string(),
+});
+
 export const ATSSchema = z.object({
   overallScore: z.number().min(0).max(100),
 
@@ -9,9 +19,19 @@ export const ATSSchema = z.object({
 
   preferredSkillsMatch: z.number().min(0).max(100),
 
-  missingKeywords: z.array(z.string()),
+  experienceMatch: z.number().min(0).max(100),
+
+  educationMatch: z.number().min(0).max(100),
 
   matchedKeywords: z.array(z.string()),
+
+  missingKeywords: z.array(z.string()),
+
+  criticalMissingKeywords: z.array(z.string()),
+
+  parsingIssues: z.array(z.string()),
+
+  sectionAnalysis: ATSSectionAnalysisSchema,
 
   recommendations: z.array(z.string()),
 });

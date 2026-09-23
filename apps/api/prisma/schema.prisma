@@ -10,12 +10,21 @@ model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
-  password  String
+  password  String?
+  provider  String?
+  providerId String?
+  avatarUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   resume Resume?
   preferences UserPreferences?
   settings   UserSettings?
+  bookmarks Bookmark[]
+  applications JobApplication[]
+  notifications Notification[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@unique([provider, providerId])
 }
 
 
@@ -93,6 +102,97 @@ model Job {
   source      String   // LinkedIn, Wellfound, etc.
   url         String   @unique
 
+  // Automation metadata. All nullable or defaulted so the change is
+  // additive for existing rows (see the Phase 3 migration).
+  externalId  String?  // Provider-side identifier, unique per provider
+  provider    String?  // Provider that supplied the record
+  contentHash String?  // Hash of the canonical fields used to detect changes
+  status      String   @default("ACTIVE") // ACTIVE | EXPIRED
+  lastSeenAt  DateTime @default(now())
+  expiredAt   DateTime?
+  enrichment  Json?    // Optional background AI enrichment payload
+  enrichedAt  DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  bookmarks Bookmark[]
+  applications JobApplication[]
+
+  @@index([externalId])
+  @@index([status])
+  @@index([lastSeenAt])
+}
+
+
+model Notification {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // NEW_JOB | JOB_UPDATED | JOB_EXPIRED | APPLICATION_UPDATE
+  title     String
+  message   String
+  data      Json?
+  readAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+
+model Bookmark {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+}
+
+
+model JobApplication {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  status    String   @default("Applied") // Applied | Interview | Offer | Rejected | Withdrawn
+  appliedAt DateTime @default(now())
+  notes     String   @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([userId])
+}
+
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }

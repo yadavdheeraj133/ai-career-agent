@@ -1,35 +1,16 @@
-const activities = [
-  {
-    time: "18 min ago",
-    title: "Analyzed new job opportunities",
-    description: "42 jobs were evaluated against your profile.",
-    icon: "✦",
-    type: "ai",
-  },
-  {
-    time: "1 hour ago",
-    title: "Identified a skill gap",
-    description: "Docker could improve your full-stack matches.",
-    icon: "◇",
-    type: "skill",
-  },
-  {
-    time: "3 hours ago",
-    title: "Updated your career profile",
-    description: "Your profile match data was refreshed.",
-    icon: "↗",
-    type: "profile",
-  },
-  {
-    time: "Yesterday",
-    title: "Career roadmap updated",
-    description: "Your next recommended career step was updated.",
-    icon: "◎",
-    type: "roadmap",
-  },
-];
+export interface Activity {
+  time: string;
+  title: string;
+  description: string;
+  icon: string;
+  type: string;
+}
 
-export default function AgentActivity() {
+interface AgentActivityProps {
+  activities: Activity[];
+}
+
+export default function AgentActivity({ activities }: AgentActivityProps) {
   return (
     <section className="agent-activity">
       <div className="section-heading">

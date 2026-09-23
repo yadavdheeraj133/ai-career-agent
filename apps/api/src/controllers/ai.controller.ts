@@ -4,6 +4,12 @@ import { Request, Response, NextFunction } from "express";
 
 import { careerAIService } from "../services/resume-ai.service.js";
 
+const MAX_INPUT_LENGTH = 50000;
+
+function requireString(value: unknown, maxLength = MAX_INPUT_LENGTH): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maxLength;
+}
+
 export class AIController {
   async analyzeResume(
     req: Request,
@@ -12,6 +18,14 @@ export class AIController {
   ): Promise<void> {
     try {
       const { resume } = req.body;
+
+      if (!requireString(resume)) {
+        res.status(400).json({
+          success: false,
+          message: "resume is required and must be a non-empty string.",
+        });
+        return;
+      }
 
       const result =
         await careerAIService.analyzeResume(resume);
@@ -33,6 +47,14 @@ export class AIController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await careerAIService.analyzeATS(
@@ -57,6 +79,14 @@ export class AIController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await careerAIService.analyzeSkillGap(
@@ -83,6 +113,14 @@ export class AIController {
     try {
       const { resume, jobDescription } = req.body;
 
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
+
       const result =
         await careerAIService.tailorResume(
           resume,
@@ -106,6 +144,14 @@ export class AIController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await careerAIService.matchResumeWithJob(
@@ -132,6 +178,14 @@ export class AIController {
     try {
       const { resume, jobDescription } = req.body;
 
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
+
       const result =
         await careerAIService.generateAIVerdict(
           resume,
@@ -155,6 +209,14 @@ export class AIController {
   ): Promise<void> {
     try {
       const { resume, jobDescription } = req.body;
+
+      if (!requireString(resume) || !requireString(jobDescription)) {
+        res.status(400).json({
+          success: false,
+          message: "resume and jobDescription are required and must be non-empty strings.",
+        });
+        return;
+      }
 
       const result =
         await careerAIService.calculateInterviewProbability(

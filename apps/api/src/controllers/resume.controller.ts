@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { resumeService } from "../services/resume.service.js";
-import { createResumeSchema } from "../validators/auth/create-resume.validator.js";
+import { createResumeSchema, updateResumeSchema } from "../validators/auth/create-resume.validator.js";
 
 export class ResumeController {
   async createResume(req: Request, res: Response) {
@@ -43,9 +43,11 @@ export class ResumeController {
 
   async updateResume(req: Request, res: Response) {
     try {
+      const data = updateResumeSchema.parse(req.body);
+
       const resume = await resumeService.updateResume(
         req.user.id,
-        req.body
+        data
       );
 
       return res.status(200).json({

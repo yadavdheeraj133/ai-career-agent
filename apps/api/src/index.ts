@@ -1,7 +1,8 @@
 import app from "./app.js";
+import { env } from "./config/env.js";
 import { prisma } from "./lib/prisma.js";
 
-const PORT = 5000;
+const PORT = Number.parseInt(env.PORT, 10);
 
 async function checkDB() {
   try {

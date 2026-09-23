@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { jobController } from "../controllers/jobs.controller.js";
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router:Router = Router();
 
-router.post("/", jobController.createJob);
-router.get("/", jobController.getAllJobs);
-router.get("/:id", jobController.getJobById);
-router.patch("/:id", jobController.updateJob);
-router.delete("/:id", jobController.deleteJob);
+router.post("/", authMiddleware, jobController.createJob);
+router.get("/", authMiddleware, jobController.getAllJobs);
+router.get("/:id", authMiddleware, jobController.getJobById);
+router.patch("/:id", authMiddleware, jobController.updateJob);
+router.delete("/:id", authMiddleware, jobController.deleteJob);
 
 export default router;

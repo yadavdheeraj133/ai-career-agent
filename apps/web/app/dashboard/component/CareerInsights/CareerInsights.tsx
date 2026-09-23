@@ -1,31 +1,19 @@
-const insights = [
-  {
-    type: "Skill gap",
-    title: "Docker could improve your matches",
-    description:
-      "Adding Docker to your skill set could improve your match with backend and full-stack roles.",
-    action: "Explore skill gap",
-    icon: "◇",
-  },
-  {
-    type: "Market insight",
-    title: "React is highly relevant",
-    description:
-      "React continues to appear frequently across the roles matching your career profile.",
-    action: "View market trends",
-    icon: "↗",
-  },
-  {
-    type: "Profile insight",
-    title: "Your profile is well positioned",
-    description:
-      "Your current skills and target role have strong alignment.",
-    action: "View profile",
-    icon: "✦",
-  },
-];
+import Link from "next/link";
 
-export default function CareerInsights() {
+export interface Insight {
+  type: string;
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+  icon: string;
+}
+
+interface CareerInsightsProps {
+  insights: Insight[];
+}
+
+export default function CareerInsights({ insights }: CareerInsightsProps) {
   return (
     <section className="career-insights">
       <div className="section-heading">
@@ -60,10 +48,10 @@ export default function CareerInsights() {
 
             <p>{insight.description}</p>
 
-            <button type="button" className="insight-action">
+            <Link href={insight.href} className="insight-action">
               {insight.action}
               <span>→</span>
-            </button>
+            </Link>
           </article>
         ))}
       </div>

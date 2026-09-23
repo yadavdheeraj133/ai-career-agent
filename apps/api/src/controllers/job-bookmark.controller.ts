@@ -28,7 +28,7 @@ export class JobBookmarkController {
       }
 
       const result =
-        await jobBookmarkService.bookmarkJob(id);
+        await jobBookmarkService.bookmarkJob(req.user.id, id);
 
       res.status(200).json({
         success: true,
@@ -59,11 +59,28 @@ export class JobBookmarkController {
       }
 
       const result =
-        await jobBookmarkService.removeBookmark(id);
+        await jobBookmarkService.removeBookmark(req.user.id, id);
 
       res.status(200).json({
         success: true,
         message: "Job bookmark removed successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listBookmarks(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const result = await jobBookmarkService.listBookmarks(req.user.id);
+
+      res.status(200).json({
+        success: true,
         data: result,
       });
     } catch (error) {

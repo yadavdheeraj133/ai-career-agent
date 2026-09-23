@@ -1,6 +1,18 @@
 import Link from "next/link";
 
-export default function AIAgent() {
+interface AIAgentProps {
+  total: number;
+  strong: number;
+  average: number;
+  hasSkills: boolean;
+}
+
+export default function AIAgent({
+  total,
+  strong,
+  average,
+  hasSkills,
+}: AIAgentProps) {
   return (
     <section className="ai-agent-card">
       <div className="ai-agent-glow" />
@@ -23,37 +35,53 @@ export default function AIAgent() {
         </div>
 
         <div className="ai-agent-message">
-          <h3>
-            I found <strong>18 jobs</strong> that match
-            your profile.
-          </h3>
+          {hasSkills ? (
+            <>
+              <h3>
+                I found <strong>{total} jobs</strong> that match
+                your profile.
+              </h3>
 
-          <p>
-            4 are strong matches based on your skills,
-            experience and career preferences.
-          </p>
+              <p>
+                {strong} are strong matches based on your skills,
+                experience and career preferences.
+              </p>
+            </>
+          ) : (
+            <>
+              <h3>
+                There are <strong>{total} jobs</strong> available to
+                match.
+              </h3>
+
+              <p>
+                Add skills to your profile so I can score how well
+                each role fits you.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="ai-agent-stats">
           <div className="ai-agent-stat">
-            <strong>18</strong>
+            <strong>{total}</strong>
             <span>Total matches</span>
           </div>
 
           <div className="ai-agent-stat strong">
-            <strong>4</strong>
+            <strong>{strong}</strong>
             <span>Strong matches</span>
           </div>
 
           <div className="ai-agent-stat">
-            <strong>87%</strong>
+            <strong>{hasSkills ? `${average}%` : "—"}</strong>
             <span>Avg. match</span>
           </div>
         </div>
 
         <div className="ai-agent-footer">
           <span>
-            Last analyzed 18 min ago
+            {hasSkills ? "Scored just now" : "Waiting for your skills"}
           </span>
 
           <Link href="/dashboard/jobs">

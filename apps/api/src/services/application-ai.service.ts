@@ -1,6 +1,7 @@
 import {
   aiService,
   responseParser,
+  schemaValidator,
 } from "../ai/services/index.js";
 
 import * as ApplicationPrompts from "../ai/prompts/application/index.js";
@@ -35,7 +36,7 @@ export class ApplicationAIService {
         response.content
       );
 
-    return CoverLetterSchema.parse(parsed);
+    return schemaValidator.validate(CoverLetterSchema, parsed);
   }
 
   async generateApplicationMessage(
@@ -78,7 +79,7 @@ export class ApplicationAIService {
         response.content
       );
 
-    return ApplicationMessageSchema.parse(parsed);
+    return schemaValidator.validate(ApplicationMessageSchema, parsed);
   }
 
   async generateApplicationAnswer(
@@ -103,7 +104,7 @@ export class ApplicationAIService {
         response.content
       );
 
-    return ApplicationAnswerSchema.parse(parsed);
+    return schemaValidator.validate(ApplicationAnswerSchema, parsed);
   }
 }
 

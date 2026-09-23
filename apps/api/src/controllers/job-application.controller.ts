@@ -23,6 +23,24 @@ export class JobApplicationController {
         notes,
       } = req.body;
 
+      if (!jobId || typeof jobId !== "string") {
+        res.status(400).json({
+          success: false,
+          message: "jobId is required and must be a string.",
+        });
+        return;
+      }
+
+      const allowedStatuses = ["Applied", "Interview", "Offer", "Rejected", "Withdrawn"] as const;
+
+      if (!status || !allowedStatuses.includes(status)) {
+        res.status(400).json({
+          success: false,
+          message: `status is required and must be one of: ${allowedStatuses.join(", ")}.`,
+        });
+        return;
+      }
+
       const input: JobApplicationInput = {
         jobId,
         status,
@@ -32,6 +50,7 @@ export class JobApplicationController {
 
       const application =
         await jobApplicationService.createApplication(
+          req.user.id,
           input
         );
 
@@ -41,6 +60,16 @@ export class JobApplicationController {
         data: application,
       });
     } catch (error) {
+      if (
+        error instanceof Error &&
+        /appliedAt must be a valid/i.test(error.message)
+      ) {
+        res.status(400).json({
+          success: false,
+          message: error.message,
+        });
+        return;
+      }
       next(error);
     }
   }
@@ -65,11 +94,100 @@ export class JobApplicationController {
 
       const application =
         await jobApplicationService.getApplication(
+          req.user.id,
           jobId
         );
 
       res.status(200).json({
         success: true,
+        data: application,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async listApplications(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const status =
+        typeof req.query.status === "string" ? req.query.status : undefined;
+
+      const allowedStatuses = ["Applied", "Interview", "Offer", "Rejected", "Withdrawn"] as const;
+
+      if (status !== undefined && !allowedStatuses.includes(status as (typeof allowedStatuses)[number])) {
+        res.status(400).json({
+          success: false,
+          message: `status must be one of: ${allowedStatuses.join(", ")}.`,
+        });
+        return;
+      }
+
+      const applications =
+        await jobApplicationService.listApplications(req.user.id, status);
+
+      res.status(200).json({
+        success: true,
+        data: applications,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateApplication(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const id = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: "Application id is required.",
+        });
+        return;
+      }
+
+      const { status, notes } = req.body;
+
+      const allowedStatuses = ["Applied", "Interview", "Offer", "Rejected", "Withdrawn"] as const;
+
+      if (
+        status !== undefined &&
+        !allowedStatuses.includes(status as (typeof allowedStatuses)[number])
+      ) {
+        res.status(400).json({
+          success: false,
+          message: `status must be one of: ${allowedStatuses.join(", ")}.`,
+        });
+        return;
+      }
+
+      if (notes !== undefined && typeof notes !== "string") {
+        res.status(400).json({
+          success: false,
+          message: "notes must be a string.",
+        });
+        return;
+      }
+
+      const application =
+        await jobApplicationService.updateApplication(req.user.id, id, {
+          status,
+          notes,
+        });
+
+      res.status(200).json({
+        success: true,
+        message: "Job application updated successfully.",
         data: application,
       });
     } catch (error) {
