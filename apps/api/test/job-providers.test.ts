@@ -24,6 +24,10 @@ import {
   loadAutomationConfig,
   normalizeRawJob,
   parseProviderUrls,
+  createProvidersFromConfig,
+  getProviderRegistration,
+  listProviderRegistrations,
+  createRegisteredProvider,
 } from "../src/automation/index.js";
 import { disconnectDatabase, prisma, resetDatabase } from "./helpers/db.js";
 
@@ -474,5 +478,77 @@ describe("expiration handling", () => {
     expect(fresh?.status).toBe("ACTIVE");
     // Expired rows are retained, never deleted.
     expect(await prisma.job.count()).toBe(2);
+  });
+});
+
+describe("provider registry", () => {
+  it("registers built-in provider types", () => {
+    const registrations = listProviderRegistrations();
+    const names = registrations.map((r) => r.name);
+    expect(names).toContain("http-json");
+    expect(names).toContain("linkedin");
+    expect(names).toContain("wellfound");
+    expect(names).toContain("naukri");
+    expect(names).toContain("greenhouse");
+    expect(names).toContain("lever");
+    expect(names).toContain("ashby");
+  });
+
+  it("provides metadata for each registered provider", () => {
+    const linkedin = getProviderRegistration("linkedin");
+    expect(linkedin).toBeDefined();
+    expect(linkedin?.displayName).toBe("LinkedIn Jobs");
+    expect(linkedin?.requiresAuth).toBe(true);
+    expect(linkedin?.authHeaderName).toBe("Authorization");
+    expect(linkedin?.envExample).toBeDefined();
+  });
+
+  it("creates registered provider instances", () => {
+    const provider = createRegisteredProvider("greenhouse", {
+      name: "my-greenhouse",
+      url: "https://boards-api.greenhouse.io/v1/boards/test/jobs",
+    });
+    // Registered provider factories use the provider type name
+    expect(provider.name).toBe("greenhouse");
+    expect(provider).toBeInstanceOf(HttpJsonJobProvider);
+  });
+
+  it("throws for unknown provider types", () => {
+    expect(() => createRegisteredProvider("unknown", { name: "x", url: "https://x" })).toThrow(
+      'Unknown provider type: "unknown"'
+    );
+  });
+
+  it("createProvidersFromConfig builds providers from deployment config", () => {
+    const providers = createProvidersFromConfig({
+      providerUrls: "greenhouse|https://api.greenhouse.io/jobs|jobs,lever|https://api.lever.co/jobs",
+      providerHeaders: {
+        greenhouse: { Authorization: "Bearer gh-token" },
+      },
+    });
+
+    expect(providers).toHaveLength(2);
+    expect(providers[0]?.name).toBe("greenhouse");
+    expect(providers[1]?.name).toBe("lever");
+  });
+
+  it("falls back to generic provider for unknown names in config", () => {
+    const providers = createProvidersFromConfig({
+      providerUrls: "custom-provider|https://custom.example/jobs",
+      providerHeaders: {},
+    });
+
+    expect(providers).toHaveLength(1);
+    expect(providers[0]).toBeInstanceOf(HttpJsonJobProvider);
+  });
+
+  it("skips malformed entries in config", () => {
+    const providers = createProvidersFromConfig({
+      providerUrls: "good|https://good.example/jobs,,bad|,|https://missing-name.example/jobs",
+      providerHeaders: {},
+    });
+
+    expect(providers).toHaveLength(1);
+    expect(providers[0]?.name).toBe("good");
   });
 });

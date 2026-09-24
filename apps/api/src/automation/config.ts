@@ -98,6 +98,17 @@ export function parseProviderUrls(
     });
 }
 
+/** Load provider URLs and headers from environment for registry-based creation. */
+export function loadProviderConfig(env: Env = process.env): {
+  providerUrls: string;
+  providerHeaders: Record<string, Record<string, string>>;
+} {
+  return {
+    providerUrls: env.JOB_PROVIDER_URLS ?? "",
+    providerHeaders: readHeaders(env),
+  };
+}
+
 export function loadAutomationConfig(env: Env = process.env): AutomationConfig {
   const headers = readHeaders(env);
 
