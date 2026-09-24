@@ -1,10 +1,24 @@
 import { AIProvider } from "./ai.provider.js";
 import { AgentRouterProvider } from "./agent-router.provider.js";
 import { MockAIProvider } from "./mock.provider.js";
-// import { OllamaProvider } from "./ollama.provider.js";
 
 function createAIProvider(): AIProvider {
-  const provider = process.env.AI_PROVIDER?.toLowerCase() ?? "mock";
+  const raw = process.env.AI_PROVIDER?.toLowerCase();
+  const isProduction = process.env.NODE_ENV === "production";
+
+  // Production must never silently return fabricated output. Mock output is
+  // only allowed outside production for local development and tests.
+  if (isProduction) {
+    if (raw !== "agent-router") {
+      throw new Error(
+        `AI_PROVIDER must be "agent-router" in production (got "${raw ?? "(unset)"}"). ` +
+          `Set AI_PROVIDER=agent-router with AGENT_ROUTER_BASE_URL, AGENT_ROUTER_API_KEY and AGENT_ROUTER_MODEL. Mock AI output is not allowed in production.`
+      );
+    }
+    return new AgentRouterProvider();
+  }
+
+  const provider = raw ?? "mock";
 
   switch (provider) {
     case "agent-router":
@@ -13,9 +27,6 @@ function createAIProvider(): AIProvider {
     case "mock":
     case "dev":
       return new MockAIProvider();
-
-    // case "ollama":
-    //   return new OllamaProvider();
 
     default:
       throw new Error(
