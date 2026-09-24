@@ -19,11 +19,11 @@ const items = [
       "Review the jobs you have bookmarked and decide which ones to apply for.",
   },
   {
-    href: "/jobs/job-vercel-frontend",
+    href: "/jobs/find",
     icon: "▤",
-    title: "Job Detail / Workspace",
+    title: "Job Workspace",
     description:
-      "Open a selected job to run ATS, resume match, skill gap, verdict and interview analysis.",
+      "Browse verified roles and open any job to run ATS, resume match, skill gap, verdict and interview analysis.",
   },
 ];
 
