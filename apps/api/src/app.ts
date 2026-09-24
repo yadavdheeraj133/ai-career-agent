@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import router from "./routes/index.route.js";
+import { env } from "./config/env.js";
 
 const app: express.Application = express();
 
@@ -32,7 +33,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: "1mb" }));
-app.use(cookieParser(process.env.COOKIE_SECRET ?? "career-agent-cookie-secret"));
+app.use(cookieParser(env.COOKIE_SECRET));
 
 // Register Routes
 app.use("/", router);
