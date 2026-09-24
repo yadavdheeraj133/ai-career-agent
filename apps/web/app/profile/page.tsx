@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { apiRequest, ApiError, getToken } from "@/lib/api";
+import { apiRequest, ApiError, getToken, API_BASE_URL } from "@/lib/api";
 import { asStringList, mergeSkills, normalizeResumeText } from "@/lib/profile-utils";
 import type { AuthUser, ParsedResumeProfile, Resume } from "@/lib/types";
 import "./profile.css";
@@ -131,7 +131,7 @@ export default function ProfilePage() {
   const achievementItems = asStringList(parsed?.achievements);
 
   async function downloadResume() {
-    const response = await fetch("http://localhost:5000/resume/file", {
+    const response = await fetch(`${API_BASE_URL}/resume/file`, {
       headers: { Authorization: `Bearer ${getToken() ?? ""}` },
     });
 
