@@ -56,6 +56,7 @@ export default function FindJobsPage() {
     location: string;
     workMode: string;
     jobType: string;
+    experience: string;
   }) => {
     setLoading(true);
     setError(null);
@@ -67,6 +68,7 @@ export default function FindJobsPage() {
       if (filters.location.trim()) params.set("location", filters.location.trim());
       if (filters.workMode) params.set("workMode", filters.workMode);
       if (filters.jobType) params.set("jobType", filters.jobType);
+      if (filters.experience) params.set("experience", filters.experience);
 
       const query = params.toString();
       const response = await apiRequest<Job[]>(
@@ -165,7 +167,7 @@ export default function FindJobsPage() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setSearched(true);
-    void runSearch({ role, location, workMode, jobType });
+    void runSearch({ role, location, workMode, jobType, experience });
   };
 
   const hasActiveFilters =

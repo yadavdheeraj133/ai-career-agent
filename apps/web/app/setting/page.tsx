@@ -33,11 +33,17 @@ async function fetchOptional<T>(path: string): Promise<T | null> {
   }
 }
 
-export default function SettingsPage() {
+type SettingsPageProps = {
+  initialSection?: string;
+};
+
+export default function SettingsPage({
+  initialSection = "appearance",
+}: SettingsPageProps) {
   const router = useRouter();
   const { user, logout, refresh } = useAuth();
 
-  const [active, setActive] = useState("appearance");
+  const [active, setActive] = useState(initialSection);
   const [theme, setTheme] = useState("Light");
   const [accent, setAccent] = useState("Violet");
   const [aiTone, setAiTone] = useState("Balanced");
@@ -64,6 +70,10 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActive(initialSection);
+  }, [initialSection]);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +125,21 @@ export default function SettingsPage() {
       cancelled = true;
     };
   }, [user]);
+
+  function handleSectionChange(sectionId: string) {
+    setActive(sectionId);
+    const sectionMap: Record<string, string> = {
+      appearance: "/setting/appearance",
+      preferences: "/setting/preferences",
+      ai: "/setting/ai",
+      jobs: "/setting/jobs",
+      notifications: "/setting/notifications",
+      security: "/setting/security",
+    };
+
+    const destination = sectionMap[sectionId] ?? "/setting";
+    router.push(destination);
+  }
 
   async function save() {
     setError(null);
@@ -248,7 +273,7 @@ export default function SettingsPage() {
                 className={`settings-nav-item ${
                   active === section.id ? "active" : ""
                 }`}
-                onClick={() => setActive(section.id)}
+                onClick={() => handleSectionChange(section.id)}
               >
                 <span>{section.icon}</span>
                 {section.label}

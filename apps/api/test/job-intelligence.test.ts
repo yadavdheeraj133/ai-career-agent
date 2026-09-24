@@ -241,6 +241,18 @@ describe("GET /api/jobs/search", () => {
     expect(res.body.count).toBe(1);
   });
 
+  it("filters by experience level", async () => {
+    await seedJob({ experience: "1-3 years" });
+    await seedJob({ experience: "5+ years" });
+
+    const res = await request(app)
+      .get("/api/jobs/search?experience=1-3%20years")
+      .set(bearer(user.token));
+
+    expect(res.body.count).toBe(1);
+    expect(res.body.data[0].experience).toBe("1-3 years");
+  });
+
   it("filters by source case-insensitively", async () => {
     await seedJob({ source: "LinkedIn" });
     await seedJob({ source: "Wellfound" });

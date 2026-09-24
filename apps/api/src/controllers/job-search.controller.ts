@@ -37,6 +37,11 @@ export class JobSearchController {
             ? (req.query.jobType as JobSearchFilters["jobType"])
             : undefined,
 
+        experience:
+          typeof req.query.experience === "string"
+            ? req.query.experience
+            : undefined,
+
         source:
           typeof req.query.source === "string"
             ? req.query.source

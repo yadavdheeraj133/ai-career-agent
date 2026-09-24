@@ -7,7 +7,7 @@
  * (test/helpers/ai.ts), so prompt building, response parsing, and Zod response
  * validation all still execute for real.
  */
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 
 import app from "../src/app.js";
@@ -349,4 +349,25 @@ describe("POST /api/resume/interview-probability", () => {
       await request(app).post("/api/resume/interview-probability").send({ resume: RESUME_TEXT, jobDescription: JOB_DESCRIPTION_TEXT })
     );
   });
+});
+
+it("supports the local mock AI provider fallback", async () => {
+  const previousProvider = process.env.AI_PROVIDER;
+
+  try {
+    vi.resetModules();
+    process.env.AI_PROVIDER = "mock";
+
+    const { aiProvider } = await import("../src/ai/providers/index.js");
+    const response = await aiProvider.generate({
+      userPrompt: "Analyze this resume and return JSON for a resume assessment.",
+    });
+
+    expect(response.model).toBe("mock");
+    expect(() => JSON.parse(response.content)).not.toThrow();
+    expect(JSON.parse(response.content)).toHaveProperty("summary");
+  } finally {
+    process.env.AI_PROVIDER = previousProvider;
+    vi.resetModules();
+  }
 });

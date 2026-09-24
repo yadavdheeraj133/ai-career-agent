@@ -10,6 +10,7 @@ export interface JobSearchFilters {
     | "Internship"
     | "Contract"
     | "Freelance";
+  experience?: string;
   source?: string;
 }
 
@@ -19,6 +20,7 @@ export class JobSearchService {
 
     const keyword = filters.keyword?.toLowerCase();
     const location = filters.location?.toLowerCase();
+    const experience = filters.experience?.trim().toLowerCase();
 
     return jobs.filter((job) => {
       const matchesKeyword =
@@ -39,6 +41,10 @@ export class JobSearchService {
         !filters.jobType ||
         job.jobType === filters.jobType;
 
+      const matchesExperience =
+        !experience ||
+        (job.experience ?? "").trim().toLowerCase() === experience;
+
       const matchesSource =
         !filters.source ||
         job.source.toLowerCase() ===
@@ -49,6 +55,7 @@ export class JobSearchService {
         matchesLocation &&
         matchesWorkMode &&
         matchesJobType &&
+        matchesExperience &&
         matchesSource
       );
     });

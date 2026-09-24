@@ -4,8 +4,6 @@
 >
 > This document defines the current locked UI/UX structure and navigation flow of the AI Career Agent frontend.
 
----
-
 # URLs
 
 http://localhost:3000/auth/login

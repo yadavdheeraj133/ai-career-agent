@@ -1,21 +1,25 @@
 import { AIProvider } from "./ai.provider.js";
 import { AgentRouterProvider } from "./agent-router.provider.js";
+import { MockAIProvider } from "./mock.provider.js";
 // import { OllamaProvider } from "./ollama.provider.js";
 
-
 function createAIProvider(): AIProvider {
-  const provider = process.env.AI_PROVIDER?.toLowerCase();
+  const provider = process.env.AI_PROVIDER?.toLowerCase() ?? "mock";
 
   switch (provider) {
     case "agent-router":
       return new AgentRouterProvider();
+
+    case "mock":
+    case "dev":
+      return new MockAIProvider();
 
     // case "ollama":
     //   return new OllamaProvider();
 
     default:
       throw new Error(
-        `Unsupported AI_PROVIDER "${provider}". Expected "agent-router". Set AI_PROVIDER=agent-router in .env along with AGENT_ROUTER_BASE_URL, AGENT_ROUTER_API_KEY and AGENT_ROUTER_MODEL.`
+        `Unsupported AI_PROVIDER "${provider}". Expected "agent-router" or "mock". Set AI_PROVIDER=agent-router in .env along with AGENT_ROUTER_BASE_URL, AGENT_ROUTER_API_KEY and AGENT_ROUTER_MODEL, or use AI_PROVIDER=mock for local development.`
       );
   }
 }

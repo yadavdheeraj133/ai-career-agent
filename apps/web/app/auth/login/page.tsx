@@ -55,7 +55,19 @@ export default function LoginPage() {
           <p>Log in to continue building your career with AI.</p>
         </div>
 
-      
+        <button
+          className="linkedin-button"
+          type="button"
+          onClick={handleLinkedInLogin}
+        >
+          <span className="linkedin-icon">in</span>
+          Continue with LinkedIn
+        </button>
+
+        <div className="divider">
+          <span>OR</span>
+        </div>
+
         <form className="manual-form" onSubmit={handleSubmit}>
           <label>
             Email / Username
