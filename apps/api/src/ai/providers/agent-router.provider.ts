@@ -87,21 +87,7 @@ export class AgentRouterProvider implements AIProvider {
       controller.abort();
     }, this.timeoutMs);
 
-    console.log("\n==============================");
-    console.log("🚀 AGENT ROUTER REQUEST");
-    console.log("==============================");
-    console.log("Model:", this.model);
-    console.log("Base URL:", this.baseUrl);
-    console.log(
-      "System Prompt Length:",
-      request.systemPrompt?.length ?? 0,
-    );
-    console.log(
-      "User Prompt Length:",
-      request.userPrompt.length,
-    );
-
-    console.time("AgentRouter Generation");
+    const startedAt = Date.now();
 
     try {
       const messages: AgentRouterMessage[] = [];
@@ -139,25 +125,15 @@ export class AgentRouterProvider implements AIProvider {
 
       const raw = await response.text();
 
-      console.log("\n======================================");
-      console.log("RAW RESPONSE FROM AGENT ROUTER");
-      console.log("======================================");
-      console.log(raw);
-
       let data: AgentRouterResponse;
 
       try {
         data = JSON.parse(raw) as AgentRouterResponse;
       } catch {
         throw new Error(
-          `AgentRouter returned invalid JSON.\n\n${raw}`,
+          `AgentRouter returned invalid JSON (status ${response.status}).`,
         );
       }
-
-      console.log("\n======================================");
-      console.log("PARSED RESPONSE");
-      console.log("======================================");
-      console.dir(data, { depth: null });
 
       if (!response.ok) {
         const errorMessage =
@@ -179,11 +155,7 @@ export class AgentRouterProvider implements AIProvider {
 
       if (!content) {
         throw new Error(
-          `AgentRouter response content is empty.\n\n${JSON.stringify(
-            data,
-            null,
-            2,
-          )}`,
+          "AgentRouter response content is empty.",
         );
       }
 
@@ -192,12 +164,16 @@ export class AgentRouterProvider implements AIProvider {
         model: data.model ?? this.model,
       };
     } catch (error) {
-      console.timeEnd("AgentRouter Generation");
-
-      console.error("\n==============================");
-      console.error("❌ AGENT ROUTER ERROR");
-      console.error("==============================");
-      console.error(error);
+      // Safe structured diagnostic: duration + error kind only.
+      // Never log prompts, responses, API keys, or personal data.
+      const durationMs = Date.now() - startedAt;
+      if (process.env.NODE_ENV !== "test") {
+        console.error(
+          `[AgentRouter] request failed after ${durationMs}ms: ${
+            error instanceof Error ? error.name : "UnknownError"
+          }`,
+        );
+      }
 
       if (
         error instanceof Error &&

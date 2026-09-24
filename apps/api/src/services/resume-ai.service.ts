@@ -45,11 +45,6 @@ export class CareerAIService {
         response.content
       );
 
-    console.log("\n======================================");
-    console.log("RESUME ANALYSIS RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
-
     return schemaValidator.validate(ResumeAnalysisSchema, parsed);
   }
 
@@ -72,11 +67,6 @@ export class CareerAIService {
       responseParser.parse<ATS>(
         response.content
       );
-
-    console.log("\n======================================");
-    console.log("ATS RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
 
     return schemaValidator.validate(ATSSchema, parsed);
   }
@@ -101,11 +91,6 @@ export class CareerAIService {
         response.content
       );
 
-    console.log("\n======================================");
-    console.log("SKILL GAP RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
-
     return schemaValidator.validate(SkillGapSchema, parsed);
   }
 
@@ -128,11 +113,6 @@ export class CareerAIService {
       responseParser.parse<ResumeTailor>(
         response.content
       );
-
-    console.log("\n======================================");
-    console.log("RESUME TAILOR RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
 
     return schemaValidator.validate(ResumeTailorSchema, parsed);
   }
@@ -157,11 +137,6 @@ export class CareerAIService {
         response.content
       );
 
-    console.log("\n======================================");
-    console.log("RESUME JOB MATCH RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
-
     return schemaValidator.validate(ResumeJobMatchSchema, parsed);
   }
 
@@ -185,11 +160,6 @@ export class CareerAIService {
         response.content
       );
 
-    console.log("\n======================================");
-    console.log("AI VERDICT RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
-
     return schemaValidator.validate(AIVerdictSchema, parsed);
   }
 
@@ -212,11 +182,6 @@ export class CareerAIService {
       responseParser.parse<InterviewProbability>(
         response.content
       );
-
-    console.log("\n======================================");
-    console.log("INTERVIEW PROBABILITY RESPONSE");
-    console.log("======================================");
-    console.log(JSON.stringify(parsed, null, 2));
 
     return schemaValidator.validate(InterviewProbabilitySchema, parsed);
   }
