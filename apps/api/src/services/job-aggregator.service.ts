@@ -36,7 +36,21 @@ export class JobAggregatorService {
         url: job.url,
       };
 
-      await jobRepository.create(data);
+      try {
+        await jobRepository.create(data);
+      } catch (error) {
+        // Lost a concurrent-insert race on the unique url: the row already
+        // exists, so count it as skipped instead of failing the batch.
+        if (
+          typeof error !== "object" ||
+          error === null ||
+          (error as { code?: unknown }).code !== "P2002"
+        ) {
+          throw error;
+        }
+        skipped++;
+        continue;
+      }
 
       created++;
     }

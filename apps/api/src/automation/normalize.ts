@@ -62,6 +62,34 @@ function clamp(value: string, max: number): string {
   return value.length > max ? value.slice(0, max) : value;
 }
 
+/**
+ * Provider posting date, when supplied. Accepts common field spellings and
+ * string/number/Date values; returns undefined for anything unparseable so a
+ * bad date never rejects an otherwise valid record.
+ */
+function readPostedAt(raw: Record<string, unknown>): Date | undefined {
+  const keys = [
+    "postedAt",
+    "posted_at",
+    "publishedAt",
+    "published_at",
+    "datePosted",
+  ];
+  for (const key of keys) {
+    const value = raw[key];
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+    if (typeof value === "string" || typeof value === "number") {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+  }
+  return undefined;
+}
+
 export function normalizeWorkMode(value: string | undefined): WorkMode {
   if (!value) return "Onsite";
   return WORK_MODE_MAP[value.toLowerCase().trim()] ?? "Onsite";
@@ -172,6 +200,7 @@ export function normalizeRawJob(
   const salary = readString(raw, ["salary", "compensation", "pay"]);
   const source =
     readString(raw, ["source", "provider", "platform"]) ?? provider;
+  const postedAt = readPostedAt(raw);
 
   const base = {
     title,
@@ -190,6 +219,7 @@ export function normalizeRawJob(
     provider: provider || null,
     externalId: externalId ?? null,
     url,
+    ...(postedAt ? { postedAt } : {}),
   } satisfies Omit<NormalizedJob, "contentHash">;
 
   return { ok: true, job: { ...base, contentHash: computeContentHash(base) } };

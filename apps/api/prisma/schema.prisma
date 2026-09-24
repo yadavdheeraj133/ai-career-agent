@@ -137,6 +137,7 @@ model Job {
   status      String   @default("ACTIVE") // ACTIVE | EXPIRED
   lastSeenAt  DateTime @default(now())
   expiredAt   DateTime?
+  postedAt    DateTime? // Provider-supplied posting date, when available
   enrichment  Json?    // Optional background AI enrichment payload
   enrichedAt  DateTime?
 
@@ -149,6 +150,10 @@ model Job {
   @@index([externalId])
   @@index([status])
   @@index([lastSeenAt])
+  // A provider must never supply the same external job twice: concurrent
+  // ingestion runs are serialized by this constraint (NULLs are distinct in
+  // PostgreSQL, so provider-less rows are unaffected).
+  @@unique([provider, externalId])
 }
 
 

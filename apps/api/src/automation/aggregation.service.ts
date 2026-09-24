@@ -60,8 +60,21 @@ function toJobPayload(job: NormalizedJob): Prisma.JobUncheckedCreateInput {
     contentHash: job.contentHash,
     status: "ACTIVE",
     lastSeenAt: new Date(),
+    postedAt: job.postedAt ?? null,
     url: job.url,
   };
+}
+
+/**
+ * Prisma unique-violation detection without depending on the generated error
+ * class export: every Prisma known-request error carries `code`.
+ */
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: unknown }).code === "P2002"
+  );
 }
 
 export class AutomationAggregationService {
@@ -112,10 +125,27 @@ export class AutomationAggregationService {
         const existing = await this.findExisting(job);
 
         if (!existing) {
-          const created = await this.jobs.createFromProvider(toJobPayload(job));
-          createdJobs.push(created);
-          summary.created += 1;
-          summary.jobs.push(job);
+          try {
+            const created = await this.jobs.createFromProvider(toJobPayload(job));
+            createdJobs.push(created);
+            summary.created += 1;
+            summary.jobs.push(job);
+          } catch (error) {
+            // Lost a concurrent-insert race (unique url or provider+externalId):
+            // fall through to the update path instead of failing the batch.
+            if (!isUniqueViolation(error)) throw error;
+            const raced = await this.findExisting(job);
+            if (!raced) throw error;
+            const updated = await this.jobs.update(raced.id, {
+              ...toJobPayload(job),
+              ...(raced.status === "EXPIRED"
+                ? { status: "ACTIVE", expiredAt: null }
+                : {}),
+            });
+            updatedJobs.push(updated);
+            summary.updated += 1;
+            summary.jobs.push(job);
+          }
           continue;
         }
 

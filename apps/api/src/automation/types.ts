@@ -28,6 +28,8 @@ export interface NormalizedJob {
   provider: string | null;
   externalId: string | null;
   url: string;
+  /** Provider-supplied posting date, when available. */
+  postedAt?: Date;
   contentHash: string;
 }
 

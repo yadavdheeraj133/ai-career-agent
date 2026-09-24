@@ -552,6 +552,11 @@ Base path:
 
 Aggregate external job data into the job system.
 
+**Authorization:** worker or admin only — the request must carry the
+configured `x-worker-secret` header, or the caller's account email must be
+listed in `ADMIN_EMAILS`. Without this configuration the endpoint fails
+closed in production.
+
 **Body**
 
 ``` json
@@ -572,6 +577,59 @@ Aggregate external job data into the job system.
   ]
 }
 ```
+
+------------------------------------------------------------------------
+
+### Job provider architecture (worker ingestion)
+
+Scheduled ingestion is performed by the worker (`apps/worker`), never by
+scraping websites. There are no bundled LinkedIn / Naukri / Wellfound
+adapters, and none are planned: providers are legitimate,
+deployment-configured HTTP JSON feeds plus an optional local fixture.
+
+**Configuration**
+
+``` text
+JOB_PROVIDER_URLS="acme|https://jobs.acme.example/api/v1/jobs|data.jobs,partner|https://partner.example/feed"
+JOB_PROVIDER_HEADERS='{"acme":{"Authorization":"Bearer <secret>"}}'
+JOB_FIXTURE_FILE="./fixtures/jobs.json"
+AUTOMATION_ENABLED=true
+AUTOMATION_RUN_ON_START=true
+JOB_FETCH_INTERVAL_MS=900000
+JOB_EXPIRE_INTERVAL_MS=21600000
+JOB_TTL_MS=2592000000
+AUTOMATION_MAX_ATTEMPTS=3
+AUTOMATION_BASE_BACKOFF_MS=200
+AUTOMATION_MAX_BACKOFF_MS=5000
+JOB_MAX_PER_PROVIDER=500
+WORKER_SECRET=<shared secret accepted via the x-worker-secret header>
+ADMIN_EMAILS=ops@example.com
+```
+
+- `JOB_PROVIDER_URLS` entries are `name|url[|jobsPath]`; `jobsPath` selects a
+  nested jobs array (for example `data.jobs`). Without it, a top-level array
+  or the `jobs` / `data` / `results` / `items` keys are accepted.
+- Provider URLs and auth headers come from the environment only and are never
+  logged; failure details record the provider name and error kind, not
+  credentials or response bodies.
+- To add a legitimate source, point `JOB_PROVIDER_URLS` at its authorized
+  API/feed. Do not add scrapers for sites without an authorized API.
+
+**Pipeline guarantees**
+
+- Provider field aliases are normalized (`jobTitle`, `companyName`,
+  `applyUrl`/`link`, `externalId`/`jobId`, `work_mode`, `job_type`,
+  posting-date variants); malformed records are skipped and reported without
+  aborting the batch.
+- Deduplication is by `(provider, externalId)` first, then canonical URL
+  (tracking params stripped). The database additionally enforces
+  `UNIQUE(provider, externalId)`, so concurrent runs cannot create
+  duplicates; the loser of an insert race falls back to the update path.
+- Providers run sequentially with bounded retries (transient failures only:
+  network errors, timeouts, HTTP 429/5xx). One failing provider never blocks
+  the others.
+- Jobs that stop appearing in feeds are marked `EXPIRED` after `JOB_TTL_MS`
+  (never deleted, so bookmarks and applications stay intact).
 
 ------------------------------------------------------------------------
 
