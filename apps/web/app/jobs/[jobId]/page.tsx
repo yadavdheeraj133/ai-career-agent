@@ -55,6 +55,24 @@ async function loadResumeSkills(): Promise<string[] | null> {
   }
 }
 
+async function loadApplicationStatus(
+  jobId: string
+): Promise<JobApplicationDetail["status"] | null> {
+  try {
+    const response = await apiRequest<JobApplicationDetail>(
+      `/api/jobs/applications/${jobId}`
+    );
+
+    return response.data.status;
+  } catch (caught) {
+    if (caught instanceof ApiError && caught.status === 404) {
+      return null;
+    }
+
+    throw caught;
+  }
+}
+
 export default function JobDetailPage() {
   const params = useParams<{ jobId: string }>();
 
@@ -91,12 +109,13 @@ export default function JobDetailPage() {
       setError(null);
 
       try {
-        const [jobResponse, bookmarks, application, skills] = await Promise.all([
-          apiRequest<Job>(`/jobs/${jobId}`),
-          apiRequest<BookmarkList>("/api/jobs/bookmarks"),
-          apiRequest<JobApplicationDetail>(`/api/jobs/applications/${jobId}`),
-          loadResumeSkills(),
-        ]);
+        const [jobResponse, bookmarks, applicationStatusValue, skills] =
+          await Promise.all([
+            apiRequest<Job>(`/jobs/${jobId}`),
+            apiRequest<BookmarkList>("/api/jobs/bookmarks"),
+            loadApplicationStatus(jobId),
+            loadResumeSkills(),
+          ]);
 
         if (cancelled) return;
 
@@ -104,7 +123,7 @@ export default function JobDetailPage() {
         setSaved(
           bookmarks.data.data.some((entry) => entry.jobId === jobResponse.data.id)
         );
-        setApplicationStatus(application.data.status);
+        setApplicationStatus(applicationStatusValue);
 
         if (skills && skills.length > 0) {
           const matches = await apiRequest<JobMatch[]>("/api/jobs/match", {
