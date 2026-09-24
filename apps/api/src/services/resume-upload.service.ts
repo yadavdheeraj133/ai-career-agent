@@ -43,6 +43,10 @@ export class ResumeUploadService {
           mimeType: file.mimetype,
           fileSize: file.size,
           uploadedAt: new Date(),
+          // A new resume has no ATS state; the gate requires a fresh check.
+          atsScore: null,
+          atsCheckedAt: null,
+          atsResult: Prisma.DbNull,
         },
         update: {
           title: path.basename(file.originalname, extension).slice(0, 100) || "Uploaded Resume",
@@ -60,6 +64,10 @@ export class ResumeUploadService {
           mimeType: file.mimetype,
           fileSize: file.size,
           uploadedAt: new Date(),
+          // Replacement content invalidates the previous ATS score.
+          atsScore: null,
+          atsCheckedAt: null,
+          atsResult: Prisma.DbNull,
         },
       });
 

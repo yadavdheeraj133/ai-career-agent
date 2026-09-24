@@ -95,6 +95,12 @@ model Resume {
   fileSize         Int?
   uploadedAt       DateTime?
 
+  // Onboarding ATS gate. Nullable so existing rows are unaffected; a
+  // resume re-upload clears these so a stale score can never pass the gate.
+  atsScore           Int?
+  atsCheckedAt       DateTime?
+  atsResult          Json?
+
   template         String   @default("modern")
   isDefault        Boolean  @default(true)
 

@@ -225,6 +225,14 @@ export interface ResumeAnalysis {
   recommendations: string[];
 }
 
+export interface AtsGateStatus {
+  hasResume: boolean;
+  atsScore: number | null;
+  atsCheckedAt: string | null;
+  passed: boolean;
+  threshold: number;
+}
+
 export interface AtsResult {
   overallScore: number;
   keywordMatch: number;

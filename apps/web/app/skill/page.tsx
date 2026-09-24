@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { apiRequest } from "@/lib/api";
+import type { AtsGateStatus } from "@/lib/types";
 
 const suggestedSkills = [
   "JavaScript",
@@ -27,17 +28,22 @@ export default function SkillsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [gate, setGate] = useState<AtsGateStatus | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSkills() {
       try {
-        const response = await apiRequest<Skill[]>("/api/skills");
+        const [skillsResponse, gateResponse] = await Promise.all([
+          apiRequest<Skill[]>("/api/skills"),
+          apiRequest<AtsGateStatus>("/resume/ats-status"),
+        ]);
 
         if (cancelled) return;
 
-        setSkills(response.data);
+        setSkills(skillsResponse.data);
+        setGate(gateResponse.data);
       } catch (caught) {
         if (cancelled) return;
 
@@ -110,6 +116,9 @@ export default function SkillsPage() {
 
   const hasSkills = skills.length > 0;
 
+  const gateChecked = gate !== null;
+  const gatePassed = gate?.passed === true;
+
   const filteredSuggestions = suggestedSkills.filter(
     (skill) =>
       !skills.some((item) => item.name.toLowerCase() === skill.toLowerCase()) &&
@@ -134,6 +143,26 @@ export default function SkillsPage() {
           </p>
         </div>
 
+        {gateChecked && !gatePassed ? (
+          <>
+            <p className="form-error">
+              {!gate?.hasResume
+                ? "Upload your resume first — the ATS check is required before adding skills."
+                : gate?.atsScore === null
+                  ? "Run the ATS check on your resume first — a passing score is required before adding skills."
+                  : `Your ATS score is ${gate?.atsScore}/100. Reach ${gate?.threshold}% to continue.`}
+            </p>
+
+            <Link
+              href="/dashboard/resume/upload"
+              className="primary-button skill-continue"
+            >
+              {!gate?.hasResume ? "Upload Resume" : "Complete ATS Check"}
+              <span>→</span>
+            </Link>
+          </>
+        ) : (
+          <>
         <div className="skill-search">
           <input
             type="text"
@@ -221,6 +250,8 @@ export default function SkillsPage() {
           Continue
           <span>→</span>
         </Link>
+          </>
+        )}
       </section>
     </main>
   );

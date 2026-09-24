@@ -23,7 +23,7 @@ export default function ManualRegisterPage() {
 
     try {
       await register(name.trim(), email.trim(), password);
-      router.replace("/skill");
+      router.replace("/dashboard/resume/upload");
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Unable to create your account."
