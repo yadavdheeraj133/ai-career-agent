@@ -6,6 +6,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "../validators/auth/password-reset.validator.js";
+import { changePasswordSchema } from "../validators/auth/change-password.validator.js";
 import { ZodError } from "zod";
 
 export const register = async (
@@ -92,7 +93,46 @@ export const login = async (
 
 };
 
-  export const getCurrentUser = async (
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const data = changePasswordSchema.parse(req.body);
+    await authService.changePassword(req.user.id, data);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+      data: null,
+    });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: error.issues,
+        data: null,
+      });
+    }
+
+    if (
+      error instanceof Error &&
+      /current password is incorrect/i.test(error.message)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Unknown error",
+      data: null,
+    });
+  }
+};
+
+export const getCurrentUser = async (
   req: Request,
   res: Response
 ) => {

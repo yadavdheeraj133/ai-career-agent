@@ -98,6 +98,19 @@ export class AuthRepository {
   });
 }
 
+  async findUserCredentialsById(id: string) {
+    return prisma.user.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      },
+    });
+  }
+
   async updatePassword(id: string, hashedPassword: string) {
     return prisma.user.update({
       where: {

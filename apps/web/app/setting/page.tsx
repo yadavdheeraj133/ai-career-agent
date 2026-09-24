@@ -67,6 +67,9 @@ export default function SettingsPage({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -201,11 +204,32 @@ export default function SettingsPage({
     }
   }
 
-  function handleChangePassword() {
+  async function handleChangePassword() {
     setError(null);
-    setNotice(
-      "For security, password changes are confirmed by email. Use “Forgot password?” to set a new one."
-    );
+    setNotice(null);
+
+    if (!currentPassword || !newPassword) {
+      setError("Enter your current password and a new password.");
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      await apiRequest("/auth/change-password", {
+        method: "POST",
+        body: { currentPassword, newPassword },
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setNotice("Password changed successfully.");
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Unable to change your password."
+      );
+    } finally {
+      setChangingPassword(false);
+    }
   }
 
   async function deleteAccount() {
@@ -567,12 +591,22 @@ export default function SettingsPage({
                 <div className="settings-grid">
                   <div className="settings-field">
                     <label>Current Password</label>
-                    <input type="password" placeholder="••••••••" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                    />
                   </div>
 
                   <div className="settings-field">
                     <label>New Password</label>
-                    <input type="password" placeholder="••••••••" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -580,9 +614,10 @@ export default function SettingsPage({
                   <button
                     type="button"
                     className="secondary-button"
-                    onClick={handleChangePassword}
+                    onClick={() => void handleChangePassword()}
+                    disabled={changingPassword}
                   >
-                    Change Password
+                    {changingPassword ? "Changing…" : "Change Password"}
                   </button>
 
                   <button

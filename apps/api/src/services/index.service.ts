@@ -7,6 +7,7 @@ import {
   ForgotPasswordInput,
   ResetPasswordInput,
 } from "../validators/auth/password-reset.validator.js";
+import { ChangePasswordInput } from "../validators/auth/change-password.validator.js";
 import { generateToken } from "../utils/jwt.js";
 
 /** Reset tokens are valid for 1 hour and single-use. */
@@ -110,6 +111,48 @@ export class AuthService {
     await authRepository.markPasswordResetTokenUsed(record.id);
 
     return { reset: true as const };
+  }
+
+  /**
+   * Authenticated password change. Verifies the current password, validates
+   * the replacement via Zod at the controller boundary, and stores only the
+   * bcrypt hash — passwords are never logged.
+   */
+  async changePassword(userId: string, data: ChangePasswordInput) {
+    const credentials = await authRepository.findUserCredentialsById(userId);
+
+    if (!credentials) {
+      throw new Error("User not found");
+    }
+
+    if (!credentials.password) {
+      throw new Error("No password is set for this account");
+    }
+
+    const isCurrentCorrect = await bcrypt.compare(
+      data.currentPassword,
+      credentials.password
+    );
+
+    if (!isCurrentCorrect) {
+      throw new Error("Current password is incorrect");
+    }
+
+    const isSamePassword = await bcrypt.compare(
+      data.newPassword,
+      credentials.password
+    );
+
+    if (isSamePassword) {
+      throw new Error("New password must be different from the current password");
+    }
+
+    const hashedPassword = await bcrypt.hash(data.newPassword, 10);
+
+    await authRepository.updatePassword(userId, hashedPassword);
+    await authRepository.deletePasswordResetTokensForUser(userId);
+
+    return { changed: true as const };
   }
 }
 
