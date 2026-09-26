@@ -116,12 +116,20 @@ export interface UserPreferences {
   updatedAt: string;
 }
 
+/** Mirrors `THEME_VALUES` in `@/lib/theme` and the `theme` API validator. */
+export type ThemePreference = "light" | "dark" | "system";
+
 export interface UserSettings {
   id: string;
   userId: string;
+  /** Master switch for the whole notification channel. */
   emailNotifications: boolean;
   jobAlerts: boolean;
   applicationUpdates: boolean;
+  interviewReminders: boolean;
+  theme: ThemePreference;
+  minMatchScore: number;
+  autoMatch: boolean;
   createdAt: string;
   updatedAt: string;
 }

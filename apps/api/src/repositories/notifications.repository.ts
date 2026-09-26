@@ -72,7 +72,17 @@ export class NotificationRepository {
       select: {
         id: true,
         preferences: true,
-        settings: { select: { jobAlerts: true, applicationUpdates: true } },
+        settings: {
+          select: {
+            // Master channel switch, the NEW_JOB category toggle, and the AI
+            // auto-match toggle that decides whether new jobs are matched
+            // against this user's profile at all.
+            emailNotifications: true,
+            jobAlerts: true,
+            applicationUpdates: true,
+            autoMatch: true,
+          },
+        },
       },
     });
   }

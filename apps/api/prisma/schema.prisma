@@ -65,9 +65,25 @@ model UserSettings {
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Master switch for the notification channel. Every notification category
+  // below is a sub-toggle of this one.
   emailNotifications Boolean @default(true)
+
+  // --- Notifications ---
   jobAlerts          Boolean @default(true)
   applicationUpdates Boolean @default(true)
+  interviewReminders Boolean @default(true)
+
+  // --- Appearance ---
+  // light | dark | system. `system` follows prefers-color-scheme on the client.
+  theme              String  @default("light")
+
+  // --- AI ---
+  // Score at or above which a match counts as "strong" in job matching.
+  minMatchScore      Int     @default(70)
+  // Whether newly aggregated jobs are automatically matched against the
+  // user's saved preferences.
+  autoMatch          Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -7,11 +7,19 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { initials } from "@/lib/format";
+import {
+  applyTheme,
+  getStoredTheme,
+  nextTheme,
+  resolveTheme,
+  startThemeSync,
+  type Theme,
+} from "@/lib/theme";
 import type { AppNotification, Job } from "@/lib/types";
 
 export default function Header() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
+  const [theme, setTheme] = useState<Theme>("light");
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -28,18 +36,20 @@ export default function Header() {
   const firstName = displayName.split(/\s+/)[0];
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("career-agent-theme");
-    const isDark = savedTheme === "dark";
-    setDarkMode(isDark);
-    document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    setTheme(getStoredTheme());
+    return startThemeSync((current) => setTheme(current));
   }, []);
 
+  // The header shows whether the workspace is dark right now, so it tracks the
+  // resolved theme rather than the stored preference: with "system" selected
+  // the button still has to describe what is on screen.
+  const darkMode = resolveTheme(theme) === "dark";
+
   const toggleTheme = () => {
-    setDarkMode((prev) => {
-      const next = !prev;
-      document.documentElement.dataset.theme = next ? "dark" : "light";
-      window.localStorage.setItem("career-agent-theme", next ? "dark" : "light");
-      return next;
+    setTheme((previous) => {
+      const target = nextTheme(previous);
+      applyTheme(target);
+      return target;
     });
   };
 

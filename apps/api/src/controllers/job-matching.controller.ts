@@ -17,6 +17,22 @@ const MAX_PAGE_SIZE = 100;
 const WORK_MODES = ["Remote", "Hybrid", "Onsite"] as const;
 const JOB_TYPES = ["Full-time", "Part-time", "Internship", "Contract", "Freelance"] as const;
 
+/**
+ * The score at or above which a result counts as a "strong match".
+ *
+ * Settings > AI lets a user move this cutoff; the hard-coded
+ * `STRONG_MATCH_THRESHOLD` remains the default for anyone who has never set
+ * one, so the existing behaviour is unchanged.
+ */
+async function resolveStrongMatchThreshold(userId: string): Promise<number> {
+  const settings = await prisma.userSettings.findUnique({
+    where: { userId },
+    select: { minMatchScore: true },
+  });
+
+  return settings?.minMatchScore ?? STRONG_MATCH_THRESHOLD;
+}
+
 type MatchFilters = {
   keyword?: string;
   location?: string;
@@ -135,8 +151,11 @@ export class JobMatchingController {
       const startIndex = (page - 1) * pageSize;
       const data = results.slice(startIndex, startIndex + pageSize);
 
+      const strongMatchThreshold =
+        await resolveStrongMatchThreshold(req.user.id);
+
       const strongMatches = results.filter(
-        (result) => result.matchScore >= STRONG_MATCH_THRESHOLD
+        (result) => result.matchScore >= strongMatchThreshold
       ).length;
       const averageMatchScore =
         total > 0

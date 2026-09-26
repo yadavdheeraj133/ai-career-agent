@@ -150,6 +150,13 @@ export class NotificationService {
   /**
    * NEW_JOB alerts for freshly ingested jobs, filtered by each user's job
    * preferences. Returns the number of notifications created.
+   *
+   * Three Settings toggles are honoured here, all of them opt-out so a user who
+   * has never opened Settings keeps receiving alerts:
+   *   - `emailNotifications` (master): turns the notification channel off.
+   *   - `autoMatch` (AI): stops newly aggregated jobs being matched against the
+   *     user's profile, so there is nothing left to alert about.
+   *   - `jobAlerts`: the NEW_JOB category itself.
    */
   async notifyNewJobs(
     jobs: NotifiableJob[],
@@ -161,6 +168,8 @@ export class NotificationService {
     const rows: Prisma.NotificationCreateManyInput[] = [];
 
     for (const candidate of candidates) {
+      if (candidate.settings?.emailNotifications === false) continue;
+      if (candidate.settings?.autoMatch === false) continue;
       if (candidate.settings?.jobAlerts === false) continue;
       if (options.excludeUserIds?.has(candidate.id)) continue;
 
@@ -230,7 +239,17 @@ export class NotificationService {
     return result.count;
   }
 
-  /** APPLICATION_UPDATE alerts; respects the user's applicationUpdates setting. */
+  /**
+   * APPLICATION_UPDATE alerts.
+   *
+   * Respects three Settings toggles, all opt-out so an untouched account keeps
+   * the alerts it had before:
+   *   - `emailNotifications` (master): the notification channel itself.
+   *   - `applicationUpdates`: status changes in general.
+   *   - `interviewReminders`: additionally gates the interview stage, so a user
+   *     who does not want interview alerts can turn them off without losing the
+   *     rest of their application tracking.
+   */
   async notifyApplicationUpdate(
     userId: string,
     job: Pick<NotifiableJob, "id" | "title" | "company">,
@@ -239,7 +258,14 @@ export class NotificationService {
     const settings = await prisma.userSettings.findUnique({
       where: { userId },
     });
+    if (settings?.emailNotifications === false) return false;
     if (settings?.applicationUpdates === false) return false;
+    if (
+      status === "Interview" &&
+      settings?.interviewReminders === false
+    ) {
+      return false;
+    }
 
     await this.create({
       userId,

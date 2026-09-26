@@ -1,10 +1,23 @@
 import { prisma } from "../lib/prisma.js";
+import type { UserSettingsInput } from "../validators/user-settings.validator.js";
 
-export interface UserSettingsInput {
-  emailNotifications?: boolean;
-  jobAlerts?: boolean;
-  applicationUpdates?: boolean;
-}
+export type { UserSettingsInput };
+
+/**
+ * Defaults for a settings row.
+ *
+ * These are the same values the Settings page showed before the row existed, so
+ * creating a row is indistinguishable from never having opened Settings.
+ */
+const SETTINGS_DEFAULTS = {
+  emailNotifications: true,
+  jobAlerts: true,
+  applicationUpdates: true,
+  interviewReminders: true,
+  theme: "light",
+  minMatchScore: 70,
+  autoMatch: true,
+} as const;
 
 export class UserSettingsService {
   async getSettings(userId: string) {
@@ -19,6 +32,19 @@ export class UserSettingsService {
     }
 
     return settings;
+  }
+
+  /**
+   * Read-only lookup for internal callers (notification and matching services)
+   * that must not turn a missing row into a 404: an absent row means the user
+   * has never opened Settings, which is treated as "everything enabled".
+   */
+  async findSettings(userId: string) {
+    return prisma.userSettings.findUnique({
+      where: {
+        userId,
+      },
+    });
   }
 
   async createSettings(
@@ -49,11 +75,8 @@ export class UserSettingsService {
     return prisma.userSettings.create({
       data: {
         userId,
-        emailNotifications:
-          data.emailNotifications ?? true,
-        jobAlerts: data.jobAlerts ?? true,
-        applicationUpdates:
-          data.applicationUpdates ?? true,
+        ...SETTINGS_DEFAULTS,
+        ...definedOnly(data),
       },
     });
   }
@@ -77,9 +100,22 @@ export class UserSettingsService {
       where: {
         userId,
       },
-      data,
+      data: definedOnly(data),
     });
   }
+}
+
+/**
+ * Drops keys whose value is `undefined`.
+ *
+ * Without this, spreading a partially filled input over the defaults would
+ * overwrite a column with `undefined` and let Prisma fall back to the schema
+ * default, silently discarding a deliberately chosen value.
+ */
+function definedOnly(data: UserSettingsInput): UserSettingsInput {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
 }
 
 export const userSettingsService =

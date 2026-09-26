@@ -4,10 +4,21 @@ import {
   NextFunction,
 } from "express";
 
-import {
-  userSettingsService,
-  type UserSettingsInput,
-} from "../services/user-settings.service.js";
+import { userSettingsService } from "../services/user-settings.service.js";
+import { updateUserSettingsSchema } from "../validators/user-settings.validator.js";
+
+/**
+ * `/users/settings` (GET, POST, PATCH).
+ *
+ * `theme` and `minMatchScore` are read back by the client to drive real
+ * behaviour, so they are validated here instead of being stored verbatim: an
+ * unrecognised theme or an out-of-range score would leave the setting in a
+ * state nothing honours. A ZodError reaches the shared error middleware, which
+ * already answers 400.
+ */
+function parseSettings(body: unknown) {
+  return updateUserSettingsSchema.parse(body);
+}
 
 export class UserSettingsController {
   async getSettings(
@@ -36,17 +47,7 @@ export class UserSettingsController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserSettingsInput = {};
-
-      if (typeof req.body.emailNotifications === "boolean") {
-        data.emailNotifications = req.body.emailNotifications;
-      }
-      if (typeof req.body.jobAlerts === "boolean") {
-        data.jobAlerts = req.body.jobAlerts;
-      }
-      if (typeof req.body.applicationUpdates === "boolean") {
-        data.applicationUpdates = req.body.applicationUpdates;
-      }
+      const data = parseSettings(req.body);
 
       const settings =
         await userSettingsService.createSettings(
@@ -70,17 +71,7 @@ export class UserSettingsController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data: UserSettingsInput = {};
-
-      if (typeof req.body.emailNotifications === "boolean") {
-        data.emailNotifications = req.body.emailNotifications;
-      }
-      if (typeof req.body.jobAlerts === "boolean") {
-        data.jobAlerts = req.body.jobAlerts;
-      }
-      if (typeof req.body.applicationUpdates === "boolean") {
-        data.applicationUpdates = req.body.applicationUpdates;
-      }
+      const data = parseSettings(req.body);
 
       if (Object.keys(data).length === 0) {
         res.status(400).json({

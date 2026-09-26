@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth-context";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,11 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(() => { const theme = localStorage.getItem("career-agent-theme"); document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light"; })()`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
