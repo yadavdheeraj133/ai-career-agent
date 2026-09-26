@@ -28,8 +28,12 @@ export interface Job {
   experience: string | null;
   salary: string | null;
   description: string | null;
+  skills?: string[] | null;
   source: string;
+  provider?: string | null;
+  externalId?: string | null;
   url: string;
+  postedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -90,6 +94,14 @@ export interface JobMatch {
   matchScore: number;
   matchedSkills: string[];
   missingSkills: string[];
+}
+
+/** Server-computed summary of a full matching query — the single source of
+ *  truth for dashboard stats so the client never recomputes thresholds. */
+export interface JobMatchSummary {
+  totalMatches: number;
+  strongMatches: number;
+  averageMatchScore: number;
 }
 
 export interface UserPreferences {

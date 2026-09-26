@@ -5,38 +5,16 @@
  * any record can be malformed. `normalizeRawJob` turns one unknown record into a
  * `NormalizedJob` or a human-readable rejection reason, so the aggregation
  * pipeline can skip a bad record without aborting the whole batch.
+ *
+ * Field-level canonicalization lives in `job-record.ts` / `text/`. This module
+ * only maps provider field names onto it and owns the parts that are specific
+ * to a raw payload: required-field validation, URL canonicalization, the
+ * dedup identity and the content hash.
  */
 import { createHash } from "node:crypto";
 
-import type { JobType, NormalizedJob, WorkMode } from "./types.js";
-
-const WORK_MODE_MAP: Record<string, WorkMode> = {
-  remote: "Remote",
-  "fully remote": "Remote",
-  hybrid: "Hybrid",
-  onsite: "Onsite",
-  "on-site": "Onsite",
-  "on site": "Onsite",
-  office: "Onsite",
-  "in office": "Onsite",
-};
-
-const JOB_TYPE_MAP: Record<string, JobType> = {
-  "full-time": "Full-time",
-  fulltime: "Full-time",
-  full_time: "Full-time",
-  full: "Full-time",
-  "part-time": "Part-time",
-  parttime: "Part-time",
-  part_time: "Part-time",
-  part: "Part-time",
-  internship: "Internship",
-  intern: "Internship",
-  contract: "Contract",
-  contractor: "Contract",
-  freelance: "Freelance",
-  freelancer: "Freelance",
-};
+import type { NormalizedJob } from "./types.js";
+import { normalizeJobRecord } from "./job-record.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -58,8 +36,20 @@ function readString(
   return undefined;
 }
 
-function clamp(value: string, max: number): string {
-  return value.length > max ? value.slice(0, max) : value;
+/**
+ * Provider-supplied skills, kept as the raw value.
+ *
+ * Canonicalization is not done here: `normalizeJobRecord` owns it, so the
+ * ingestion path and the re-normalization backfill cannot disagree. The value
+ * is only narrowed from "whatever the provider sent" to "a string or an array",
+ * which is what the shared normalizer accepts.
+ */
+function readSkills(raw: Record<string, unknown>): unknown {
+  const value = raw.skills ?? raw.tags ?? raw.requiredSkills ?? raw.skillSet;
+  if (value === null || value === undefined) return undefined;
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string" || typeof value === "number") return value;
+  return undefined;
 }
 
 /**
@@ -90,14 +80,91 @@ function readPostedAt(raw: Record<string, unknown>): Date | undefined {
   return undefined;
 }
 
-export function normalizeWorkMode(value: string | undefined): WorkMode {
-  if (!value) return "Onsite";
-  return WORK_MODE_MAP[value.toLowerCase().trim()] ?? "Onsite";
+/**
+ * Work mode and job type are canonicalized by `normalizeWorkMode` /
+ * `normalizeJobType` in `text/fields.ts`, which derive from location evidence
+ * and route seniority values to the experience field. The former enum maps that
+ * lived here are superseded and deliberately not kept as a second, weaker
+ * implementation.
+ */
+
+/**
+ * First usable value across several provider field names.
+ *
+ * `job_types`/`tags`-style fields arrive as arrays, and the first entry is the
+ * one the provider considers primary. Arrays are not joined into a
+ * comma-separated string, which is what used to let a single value turn into
+ * `"Full-time, Contract"`.
+ */
+function readFirstString(
+  raw: Record<string, unknown>,
+  keys: string[]
+): string | undefined {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim().length > 0) return value.trim();
+    if (typeof value === "number") return String(value);
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        if (typeof entry === "string" && entry.trim().length > 0) return entry.trim();
+        if (typeof entry === "number") return String(entry);
+      }
+    }
+  }
+  return undefined;
 }
 
-export function normalizeJobType(value: string | undefined): JobType {
-  if (!value) return "Full-time";
-  return JOB_TYPE_MAP[value.toLowerCase().trim()] ?? "Full-time";
+/** Reads a boolean flag, accepting the string spellings providers use. */
+function readBoolean(
+  raw: Record<string, unknown>,
+  keys: string[]
+): boolean | undefined {
+  for (const key of keys) {
+    const value = raw[key];
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") {
+      const key2 = value.toLowerCase().trim();
+      if (["true", "yes", "1", "remote"].includes(key2)) return true;
+      if (["false", "no", "0", "onsite", "hybrid", ""].includes(key2)) return false;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Salary as either a formatted string or a structured object.
+ *
+ * Structured fields are passed through untouched so the shared salary
+ * normalizer can preserve min, max, currency and period exactly.
+ */
+function readSalary(
+  raw: Record<string, unknown>
+): string | number | Record<string, unknown> | undefined {
+  for (const key of ["salary", "compensation", "pay", "salaryRange", "salary_range"]) {
+    const value = raw[key];
+    if (typeof value === "string" && value.trim().length > 0) return value;
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Recovers a provider identifier from the job URL.
+ *
+ * Adzuna identifies adverts by a numeric id that also appears in the landing
+ * URL (`/jobs/details/5886607450`, `/jobs/land/ad/5895599733`). Reading it back
+ * out restores the `provider + externalId` identity for rows ingested before
+ * the field was mapped, without inventing anything: the number is the
+ * provider's own.
+ */
+export function externalIdFromUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  const match = String(value).match(/\/(\d{6,})(?:\D|$)/);
+  return match ? match[1]! : null;
 }
 
 /**
@@ -110,7 +177,11 @@ export function normalizeUrl(value: string | undefined): string | null {
   try {
     const url = new URL(value.trim());
     url.hash = "";
-    const tracking = /^(utm_|ref$|ref_|source$|gh_src$|fbclid$|gclid$)/i;
+    // `se`/`v` are Adzuna's per-click identifiers: the same advert reached
+    // through two clicks differs only by them, so leaving them in defeats
+    // deduplication entirely.
+    const tracking =
+      /^(utm_|ref$|ref_|source$|gh_src$|fbclid$|gclid$|se$|v$|campaign$|cid$|clickid$|trk$|trackingid$)/i;
     for (const key of [...url.searchParams.keys()]) {
       if (tracking.test(key)) {
         url.searchParams.delete(key);
@@ -173,7 +244,7 @@ export function normalizeRawJob(
   }
 
   const rawUrl = readString(raw, ["url", "applyUrl", "link", "jobUrl"]);
-  const externalId = readString(raw, [
+  let externalId: string | null | undefined = readString(raw, [
     "externalId",
     "external_id",
     "jobId",
@@ -188,34 +259,44 @@ export function normalizeRawJob(
         externalId
       )}`;
     } else {
+      // A raw record with neither a usable URL nor an id cannot be stored
+      // without inventing an identity, so it is rejected instead.
       return { ok: false, reason: "url is required" };
     }
   }
 
-  const location =
-    readString(raw, ["location", "city", "place"]) ?? "Not specified";
+  // One central normalizer decides every display field, so an ingested record
+  // and a re-normalized stored row are guaranteed to agree.
+  const normalized = normalizeJobRecord({
+    title,
+    company,
+    location: readString(raw, ["location", "city", "place"]),
+    workMode: readString(raw, ["workMode", "work_mode", "workplace"]),
+    remoteFlag: readBoolean(raw, ["remote", "isRemote", "is_remote"]),
+    jobType: readFirstString(raw, [
+      "jobType",
+      "job_type",
+      "employmentType",
+      "type",
+    ]),
+    experience: readString(raw, ["experience", "experienceLevel", "jobLevel"]),
+    salary: readSalary(raw),
+    description: readString(raw, ["description", "details", "summary"]),
+    skills: readSkills(raw),
+    source: readString(raw, ["source", "platform"]),
+    provider,
+  });
 
-  const description = readString(raw, ["description", "details", "summary"]);
-  const experience = readString(raw, ["experience", "experienceLevel"]);
-  const salary = readString(raw, ["salary", "compensation", "pay"]);
-  const source =
-    readString(raw, ["source", "provider", "platform"]) ?? provider;
   const postedAt = readPostedAt(raw);
 
   const base = {
-    title,
-    company,
-    location: clamp(location, 100),
-    workMode: normalizeWorkMode(
-      readString(raw, ["workMode", "work_mode", "remote", "workplace"])
-    ),
-    jobType: normalizeJobType(
-      readString(raw, ["jobType", "job_type", "employmentType", "type"])
-    ),
-    experience: experience ? clamp(experience, 100) : undefined,
-    salary: salary ? clamp(salary, 100) : undefined,
-    description: description ? clamp(description, 10_000) : undefined,
-    source: clamp(source, 50),
+    ...normalized,
+    // `salary`/`experience`/`description` are null when absent, which is what
+    // the optional columns and the UI's `?? "Not specified"` fallbacks expect.
+    experience: normalized.experience ?? undefined,
+    salary: normalized.salary ?? undefined,
+    description: normalized.description ?? undefined,
+    skills: normalized.skills,
     provider: provider || null,
     externalId: externalId ?? null,
     url,
@@ -227,5 +308,8 @@ export function normalizeRawJob(
 
 /** Identity key used to dedupe records inside a single batch. */
 export function identityKey(job: NormalizedJob): string {
+  if (job.provider && job.externalId) {
+    return `${job.provider.toLowerCase()}:${job.externalId}`;
+  }
   return job.url.toLowerCase();
 }

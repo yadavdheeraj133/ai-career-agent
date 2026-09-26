@@ -2,6 +2,11 @@
  * Fetch orchestration: runs each provider through bounded retries and feeds the
  * result into the aggregation pipeline. Providers are isolated — one failing
  * source never prevents the others from running.
+ *
+ * Relevance filtering is not done here: the aggregation pipeline is the single
+ * place that decides what is a developer job, so the scheduler, the worker and
+ * the HTTP aggregate endpoint cannot drift apart. This service only supplies
+ * the per-provider cap and reports back the counts the pipeline produced.
  */
 import { withRetry } from "./retry.js";
 import {
@@ -45,8 +50,18 @@ export class IngestionService {
           this.options.onRetry?.({ provider: provider.name, attempt }),
       });
 
-      const limited = jobs.slice(0, this.options.maxJobsPerProvider);
-      const summary = await this.aggregation.ingest(limited, provider.name);
+      const summary = await this.aggregation.ingest(jobs, provider.name, {
+        maxJobs: this.options.maxJobsPerProvider,
+      });
+
+      this.options.logger?.info("Provider ingested", {
+        provider: provider.name,
+        fetched: summary.fetched,
+        accepted: summary.accepted,
+        rejected: summary.rejected,
+        created: summary.created,
+        updated: summary.updated,
+      });
 
       return { provider: provider.name, ok: true, summary };
     } catch (error) {

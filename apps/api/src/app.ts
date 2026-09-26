@@ -1,4 +1,4 @@
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -33,6 +33,56 @@ app.use(
   })
 );
 app.use(express.json({ limit: "1mb" }));
+
+/**
+ * Body-parser failures are raised before the router is reached, so the router's
+ * error handler never sees them and Express falls back to its default handler,
+ * which answers with an HTML page that embeds a stack trace. Both are reported
+ * here in the same JSON envelope the rest of the API uses.
+ */
+app.use(
+  (
+    err: Error & { type?: string },
+    _req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    if (err?.type === "entity.parse.failed") {
+      res.status(400).json({
+        success: false,
+        message: "Malformed JSON in request body.",
+        data: null,
+      });
+      return;
+    }
+
+    if (err?.type === "entity.too.large") {
+      res.status(413).json({
+        success: false,
+        message: "Request body exceeds the 1 MB limit.",
+        data: null,
+      });
+      return;
+    }
+
+    next(err);
+  }
+);
+
+/**
+ * `express.json()` only parses a body when the request declares JSON, and
+ * Express 5 leaves `req.body` undefined otherwise. Handlers that destructure
+ * `req.body` would then throw a TypeError and surface it as a 500, so a request
+ * carrying no parseable body is normalised once here: that is a client-side
+ * validation failure, not a server fault.
+ */
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  if (req.body === undefined || req.body === null) {
+    req.body = {};
+  }
+  next();
+});
+
 app.use(cookieParser(env.COOKIE_SECRET));
 
 // Register Routes

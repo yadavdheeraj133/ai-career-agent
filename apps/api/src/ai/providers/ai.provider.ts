@@ -1,16 +1,7 @@
+import type { AIRequest, AIResponse } from "../types/index.js";
 
-export interface AIRequest {
-    systemPrompt?: string;
-    userPrompt : string;
-    temperature? : number;
-    maxTokens?: number
-}
+export type { AIRequest, AIResponse };
 
-export interface AIResponse {
-    content  : string;
-    model: string;
-}
-
-export interface AIProvider  {
-    generate(request : AIRequest):Promise<AIResponse>;
+export interface AIProvider {
+  generate(request: AIRequest): Promise<AIResponse>;
 }

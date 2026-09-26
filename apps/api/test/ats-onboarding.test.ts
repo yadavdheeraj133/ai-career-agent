@@ -151,7 +151,7 @@ describe("POST /resume/ats-check", () => {
       .expect(400);
   });
 
-  it("returns 500 when ATS processing fails", async () => {
+  it("returns 503 when ATS processing fails", async () => {
     await seedResume(user.id);
     setAIFailure();
 
@@ -160,7 +160,8 @@ describe("POST /resume/ats-check", () => {
       .set(bearer(user.token))
       .send({ jobDescription: JOB_DESCRIPTION_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe("AI_UPSTREAM_UNAVAILABLE");
 
     const stored = await prisma.resume.findUnique({ where: { userId: user.id } });
     expect(stored?.atsScore).toBeNull();

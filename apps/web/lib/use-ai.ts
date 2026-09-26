@@ -4,9 +4,9 @@
  * Client hooks shared by every AI feature page.
  *
  * `useAiAction` wraps a single authenticated POST and exposes
- * loading/data/error so each page can render gracefully. The AI endpoints
- * return 500 until the backend provider is configured, so `describeAiError`
- * turns that into a clear, actionable message instead of a generic failure.
+ * loading/data/error so each page can render gracefully. AI boundary failures
+ * come back classified (502/503/504 with an `AI_*` code and a message written for
+ * users), so `describeAiError` prefers that message over guessing at the cause.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -15,14 +15,23 @@ import { ApiError, apiRequest } from "./api";
 import { resumeToText } from "./resume-text";
 import type { Resume } from "./types";
 
+/** Statuses the API uses for AI provider/boundary failures. */
+const AI_FAILURE_STATUSES = [500, 502, 503, 504];
+
 export function describeAiError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 401) {
       return "Your session has expired. Please sign in again.";
     }
 
-    if (error.status === 500) {
-      return "The AI service is unavailable right now. The backend may still need its AI provider configured (AI_PROVIDER / AGENT_ROUTER_*), or the provider quota was reached. Please try again later.";
+    if (AI_FAILURE_STATUSES.includes(error.status)) {
+      // The server already distinguishes a misconfigured provider, a rejected
+      // credential, a rate limit, a timeout and a truncated answer, and it
+      // sends a message safe to show. Only fall back when there is none.
+      return (
+        error.message ||
+        "The AI service is unavailable right now. Please try again later."
+      );
     }
 
     return error.message;

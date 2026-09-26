@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 import { jobRepository } from "../repositories/jobs.repository.js";
 
 export interface JobSearchFilters {
@@ -14,51 +16,68 @@ export interface JobSearchFilters {
   source?: string;
 }
 
+export interface JobSearchPagination {
+  page: number;
+  pageSize: number;
+}
+
 export class JobSearchService {
-  async searchJobs(filters: JobSearchFilters) {
-    const jobs = await jobRepository.findAll();
+  /**
+   * Find Jobs.
+   *
+   * Defaults to the developer-relevant dataset: relevance is part of the query
+   * (`isDeveloperJob`), so unrelated historical rows are never scanned, and the
+   * remaining filters, ordering and pagination are all applied by the database
+   * rather than in memory.
+   */
+  async searchJobs(
+    filters: JobSearchFilters,
+    pagination: JobSearchPagination = { page: 1, pageSize: 50 }
+  ) {
+    const keyword = filters.keyword?.trim();
+    const location = filters.location?.trim();
+    const experience = filters.experience?.trim();
+    const source = filters.source?.trim();
 
-    const keyword = filters.keyword?.toLowerCase();
-    const location = filters.location?.toLowerCase();
-    const experience = filters.experience?.trim().toLowerCase();
+    const where: Prisma.JobWhereInput = {};
 
-    return jobs.filter((job) => {
-      const matchesKeyword =
-        !keyword ||
-        job.title.toLowerCase().includes(keyword) ||
-        job.company.toLowerCase().includes(keyword) ||
-        job.description?.toLowerCase().includes(keyword);
+    if (keyword) {
+      where.OR = [
+        { title: { contains: keyword, mode: "insensitive" } },
+        { company: { contains: keyword, mode: "insensitive" } },
+        { description: { contains: keyword, mode: "insensitive" } },
+      ];
+    }
+    if (location) {
+      where.location = { contains: location, mode: "insensitive" };
+    }
+    if (filters.workMode) {
+      where.workMode = filters.workMode;
+    }
+    if (filters.jobType) {
+      where.jobType = filters.jobType;
+    }
+    if (experience) {
+      where.experience = { contains: experience, mode: "insensitive" };
+    }
+    if (source) {
+      where.source = { equals: source, mode: "insensitive" };
+    }
 
-      const matchesLocation =
-        !location ||
-        job.location.toLowerCase().includes(location);
+    const skip = (pagination.page - 1) * pagination.pageSize;
+    const { jobs, total } = await jobRepository.search(
+      where,
+      skip,
+      pagination.pageSize
+    );
 
-      const matchesWorkMode =
-        !filters.workMode ||
-        job.workMode === filters.workMode;
-
-      const matchesJobType =
-        !filters.jobType ||
-        job.jobType === filters.jobType;
-
-      const matchesExperience =
-        !experience ||
-        (job.experience ?? "").trim().toLowerCase() === experience;
-
-      const matchesSource =
-        !filters.source ||
-        job.source.toLowerCase() ===
-          filters.source.toLowerCase();
-
-      return (
-        matchesKeyword &&
-        matchesLocation &&
-        matchesWorkMode &&
-        matchesJobType &&
-        matchesExperience &&
-        matchesSource
-      );
-    });
+    return {
+      jobs,
+      total,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalPages: Math.ceil(total / pagination.pageSize),
+    };
   }
 }
 

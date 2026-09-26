@@ -10,6 +10,11 @@
  * credentials configured via environment variables at deployment time.
  */
 import { HttpJsonJobProvider } from "./http-json.provider.js";
+import { ArbeitnowJobProvider } from "./arbeitnow.provider.js";
+import { adzunaProviderFromEnv } from "./adzuna.provider.js";
+import { themuseProviderFromEnv } from "./themuse.provider.js";
+import { RemoteOkJobProvider } from "./remoteok.provider.js";
+import { JobicyJobProvider } from "./jobicy.provider.js";
 import type { JobProvider } from "./job-provider.js";
 
 export interface ProviderFactoryOptions {
@@ -76,6 +81,75 @@ registerProvider({
   envExample: {
     url: "JOB_PROVIDER_URLS=<name>|https://api.example.com/jobs|data.jobs",
     headers: "JOB_PROVIDER_HEADERS={\"<name>\":{\"Authorization\":\"Bearer <token>\"}}",
+  },
+});
+
+registerProvider({
+  name: "arbeitnow",
+  displayName: "Arbeitnow",
+  description: "Public Arbeitnow job-board API. No login or scraping is required.",
+  requiresAuth: false,
+  factory: (options) =>
+    new ArbeitnowJobProvider({
+      url: options.url,
+      headers: options.headers,
+    }),
+  envExample: {
+    url: "JOB_PROVIDER_URLS=arbeitnow|https://arbeitnow.com/api/job-board-api|data",
+    headers: "",
+  },
+});
+
+registerProvider({
+  name: "adzuna",
+  displayName: "Adzuna",
+  description:
+    "Adzuna Jobs API. Requires a free App ID + App Key registered at developer.adzuna.com, supplied as ADZUNA_APP_ID / ADZUNA_APP_KEY.",
+  requiresAuth: true,
+  authHeaderName: "app_id",
+  factory: (options) => adzunaProviderFromEnv(options),
+  envExample: {
+    url: "JOB_PROVIDER_URLS=adzuna|https://api.adzuna.com/v1/api/jobs/gb/search/1",
+    headers: 'ADZUNA_APP_ID=<app-id> and ADZUNA_APP_KEY=<app-key>',
+  },
+});
+
+registerProvider({
+  name: "themuse",
+  displayName: "The Muse",
+  description:
+    "The Muse public jobs API. Works anonymously within rate limits; optional THE_MUSE_API_KEY (registered app) raises the limit.",
+  requiresAuth: false,
+  factory: (options) => themuseProviderFromEnv(options),
+  envExample: {
+    url: "JOB_PROVIDER_URLS=themuse|https://www.themuse.com/api/public/jobs?page=0",
+    headers: "THE_MUSE_API_KEY=<optional-registered-app-key>",
+  },
+});
+
+registerProvider({
+  name: "remoteok",
+  displayName: "Remote OK",
+  description:
+    "Remote OK public jobs feed (https://remoteok.com/api). Remote-only listings; no authentication required.",
+  requiresAuth: false,
+  factory: (options) => new RemoteOkJobProvider(options),
+  envExample: {
+    url: "JOB_PROVIDER_URLS=remoteok|https://remoteok.com/api",
+    headers: "",
+  },
+});
+
+registerProvider({
+  name: "jobicy",
+  displayName: "Jobicy",
+  description:
+    "Jobicy public remote-jobs API (https://jobicy.com/api/v2/remote-jobs). No authentication required.",
+  requiresAuth: false,
+  factory: (options) => new JobicyJobProvider(options),
+  envExample: {
+    url: "JOB_PROVIDER_URLS=jobicy|https://jobicy.com/api/v2/remote-jobs?count=100",
+    headers: "",
   },
 });
 

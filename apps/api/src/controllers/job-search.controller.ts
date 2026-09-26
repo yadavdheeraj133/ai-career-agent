@@ -48,13 +48,22 @@ export class JobSearchController {
             : undefined,
       };
 
-      const jobs =
-        await jobSearchService.searchJobs(filters);
+      const page = Math.max(1, Number.parseInt(String(req.query.page ?? "1"), 10) || 1);
+      const pageSize = Math.min(
+        100,
+        Math.max(1, Number.parseInt(String(req.query.pageSize ?? "50"), 10) || 50)
+      );
+
+      const result = await jobSearchService.searchJobs(filters, { page, pageSize });
 
       res.status(200).json({
         success: true,
-        count: jobs.length,
-        data: jobs,
+        count: result.jobs.length,
+        total: result.total,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+        data: result.jobs,
       });
     } catch (error) {
       next(error);

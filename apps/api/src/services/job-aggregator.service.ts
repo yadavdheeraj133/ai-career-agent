@@ -5,16 +5,26 @@ import {
   JobAggregationResult,
 } from "../types/job.type.js";
 
+import { isDeveloperJob } from "../automation/developer-classifier.js";
 import { jobRepository } from "../repositories/jobs.repository.js";
 
 export class JobAggregatorService {
+  /**
+   * HTTP ingestion path for `POST /api/jobs/aggregate`.
+   *
+   * Applies the same developer-only policy as the automation pipeline so the
+   * endpoint cannot be used to push unrelated roles into the job dataset, and
+   * records the verdict on the stored row.
+   */
   async aggregateJobs(
     jobs: AggregatedJob[]
   ): Promise<JobAggregationResult> {
     let created = 0;
     let skipped = 0;
 
-    for (const job of jobs) {
+    const developerJobs = jobs.filter((job) => isDeveloperJob(job));
+
+    for (const job of developerJobs) {
       const existingJob =
         await jobRepository.findByUrl(job.url);
 
@@ -34,6 +44,7 @@ export class JobAggregatorService {
         description: job.description,
         source: job.source,
         url: job.url,
+        isDeveloperJob: true,
       };
 
       try {
@@ -58,9 +69,11 @@ export class JobAggregatorService {
     return {
       source: jobs[0]?.source ?? "unknown",
       fetched: jobs.length,
+      accepted: developerJobs.length,
+      rejected: jobs.length - developerJobs.length,
       created,
       skipped,
-      jobs,
+      jobs: developerJobs,
     };
   }
 }

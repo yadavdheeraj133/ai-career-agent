@@ -260,12 +260,17 @@
   letter-spacing: -0.02em;
 }
 
-.job-detail-page .job-summary-card > p:last-child,
+/* `:not(.card-label)` rather than `:last-child`: the description paragraph is
+   followed by the fact grid, so a positional selector never matched it.
+   `pre-line` preserves the paragraph and list breaks the API stores in the
+   description while still collapsing runs of spaces. */
+.job-detail-page .job-summary-card > p:not(.card-label),
 .job-detail-page .tab-panel > p:not(.card-label) {
   margin: 10px 0 0;
   color: var(--muted);
   font-size: 12.5px;
   line-height: 1.7;
+  white-space: pre-line;
 }
 
 /* FACTS */

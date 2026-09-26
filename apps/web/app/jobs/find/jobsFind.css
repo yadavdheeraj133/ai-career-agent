@@ -388,6 +388,47 @@
 }
 
 /* ================================
+   LOAD MORE
+=============================== */
+
+.jobs-find-page .load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.jobs-find-page .load-more-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--foreground);
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.jobs-find-page .load-more-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(47, 38, 88, 0.08);
+}
+
+.jobs-find-page .load-more-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ================================
    EMPTY STATE
 ================================ */
 

@@ -17,8 +17,14 @@ import {
   ExpirationService,
   FixtureJobProvider,
   HttpJsonJobProvider,
+  ArbeitnowJobProvider,
+  AdzunaJobProvider,
+  TheMuseJobProvider,
+  RemoteOkJobProvider,
+  JobicyJobProvider,
   HttpError,
   IngestionService,
+  PermanentError,
   TransientError,
   createProviders,
   loadAutomationConfig,
@@ -28,6 +34,7 @@ import {
   getProviderRegistration,
   listProviderRegistrations,
   createRegisteredProvider,
+  isDeveloperJob,
 } from "../src/automation/index.js";
 import { disconnectDatabase, prisma, resetDatabase } from "./helpers/db.js";
 
@@ -93,6 +100,25 @@ describe("provider configuration", () => {
     const config = loadAutomationConfig({} as Record<string, string>);
     expect(config.providers).toEqual([]);
     expect(createProviders(config)).toEqual([]);
+  });
+
+  it("routes configured names to their dedicated adapters", () => {
+    const config = loadAutomationConfig({
+      JOB_PROVIDER_URLS:
+        "arbeitnow|https://arbeitnow.com/api/job-board-api|data," +
+        "themuse|https://www.themuse.com/api/public/jobs?page=1," +
+        "remoteok|https://remoteok.com/api," +
+        "jobicy|https://jobicy.com/api/v2/remote-jobs?count=100," +
+        "adzuna|https://api.adzuna.com/v1/api/jobs/gb/search/1",
+    } as Record<string, string>);
+
+    const providers = createProviders(config);
+    const byName = new Map(providers.map((p) => [p.name, p]));
+    expect(byName.get("arbeitnow")).toBeInstanceOf(ArbeitnowJobProvider);
+    expect(byName.get("adzuna")).toBeInstanceOf(AdzunaJobProvider);
+    expect(byName.get("themuse")).toBeInstanceOf(TheMuseJobProvider);
+    expect(byName.get("remoteok")).toBeInstanceOf(RemoteOkJobProvider);
+    expect(byName.get("jobicy")).toBeInstanceOf(JobicyJobProvider);
   });
 
   it("skips malformed provider entries without breaking valid ones", () => {
@@ -179,7 +205,567 @@ describe("HttpJsonJobProvider", () => {
   });
 });
 
+describe("ArbeitnowJobProvider", () => {
+  it("maps public feed records to normalized provider input", async () => {
+    let calledUrl = "";
+    const provider = new ArbeitnowJobProvider({
+      url: "https://arbeitnow.com/api/job-board-api",
+      fetchImpl: (async (input: RequestInfo | URL) => {
+        calledUrl = String(input);
+        return jsonResponse({
+          data: [
+            {
+              slug: "frontend-engineer-1",
+              title: "Frontend Engineer",
+              company_name: "Example Labs",
+              location: "Remote",
+              remote: true,
+              job_types: ["Full-time"],
+              tags: ["React", "TypeScript"],
+              description: "Build product interfaces.",
+              url: "https://www.arbeitnow.com/jobs/frontend-engineer-1",
+              created_at: 1790000000,
+            },
+          ],
+        });
+      }) as typeof fetch,
+    });
+
+    const result = await provider.fetchJobs();
+    // The public board API has no keyword/category filter, so the request must
+    // stay unfiltered and rely on server-side classification instead.
+    expect(new URL(calledUrl).searchParams.has("search")).toBe(false);
+    expect(new URL(calledUrl).searchParams.has("tag")).toBe(false);
+    expect(result.jobs[0]).toMatchObject({
+      title: "Frontend Engineer",
+      company: "Example Labs",
+      workMode: "Remote",
+      skills: ["React", "TypeScript"],
+      provider: "arbeitnow",
+      externalId: "frontend-engineer-1",
+      source: "Arbeitnow",
+    });
+  });
+});
+
+describe("AdzunaJobProvider", () => {
+  it("maps API records to normalized provider input and appends auth params", async () => {
+    let calledUrl = "";
+    const provider = new AdzunaJobProvider({
+      url: "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+      appId: "test-id",
+      appKey: "test-key",
+      fetchImpl: (async (input: RequestInfo | URL) => {
+        calledUrl = String(input);
+        return jsonResponse({
+          results: [
+            {
+              id: 1001,
+              title: "Backend Engineer",
+              company: { display_name: "Acme Ltd" },
+              location: { display_name: "London" },
+              description: "Build APIs.",
+              redirect_url: "https://www.adzuna.com/land?id=1001",
+              created: "2026-09-01T00:00:00Z",
+              contract_time: "full_time",
+            },
+          ],
+        });
+      }) as typeof fetch,
+    });
+
+    const result = await provider.fetchJobs();
+    expect(calledUrl).toContain("app_id=test-id");
+    expect(calledUrl).toContain("app_key=test-key");
+    expect(calledUrl).toContain("results_per_page=50");
+    expect(new URL(calledUrl).searchParams.get("what_or")).toContain(
+      "software developer"
+    );
+    expect(result.jobs[0]).toMatchObject({
+      title: "Backend Engineer",
+      company: "Acme Ltd",
+      location: "London",
+      jobType: "full_time",
+      provider: "adzuna",
+      externalId: "1001",
+      source: "Adzuna",
+      postedAt: "2026-09-01T00:00:00Z",
+    });
+  });
+
+  it("preserves an explicit search query", async () => {
+    let calledUrl = "";
+    const provider = new AdzunaJobProvider({
+      url: "https://api.adzuna.com/v1/api/jobs/gb/search/1?title_only=rust",
+      appId: "test-id",
+      appKey: "test-key",
+      fetchImpl: (async (input: RequestInfo | URL) => {
+        calledUrl = String(input);
+        return jsonResponse({ results: [] });
+      }) as typeof fetch,
+    });
+
+    await provider.fetchJobs();
+    const url = new URL(calledUrl);
+    expect(url.searchParams.get("title_only")).toBe("rust");
+    expect(url.searchParams.has("what_or")).toBe(false);
+  });
+
+  it("fails fast with a permanent error when credentials are missing", async () => {
+    const provider = new AdzunaJobProvider({
+      url: "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+      appId: "",
+      appKey: "",
+    });
+    await expect(provider.fetchJobs()).rejects.toBeInstanceOf(PermanentError);
+  });
+
+  it("maps HTTP 401 to an HttpError (non-retryable)", async () => {
+    const provider = new AdzunaJobProvider({
+      url: "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+      appId: "bad",
+      appKey: "bad",
+      fetchImpl: (async () => jsonResponse({ error: "unauthorized" }, 401)) as typeof fetch,
+    });
+    await expect(provider.fetchJobs()).rejects.toMatchObject({
+      name: "HttpError",
+      status: 401,
+    } satisfies Partial<HttpError>);
+  });
+
+  it("treats missing results arrays as transient failures", async () => {
+    const provider = new AdzunaJobProvider({
+      url: "https://api.adzuna.com/v1/api/jobs/gb/search/1",
+      appId: "test-id",
+      appKey: "test-key",
+      fetchImpl: (async () => jsonResponse({ ok: true })) as typeof fetch,
+    });
+    await expect(provider.fetchJobs()).rejects.toBeInstanceOf(TransientError);
+  });
+});
+
+describe("TheMuseJobProvider", () => {
+  it("maps public API results to normalized provider input", async () => {
+    const provider = new TheMuseJobProvider({
+      url: "https://www.themuse.com/api/public/jobs?page=1",
+      fetchImpl: (async () =>
+        jsonResponse({
+          page: 1,
+          page_count: 1,
+          total: 1,
+          results: [
+            {
+              id: 19225596,
+              name: "Registered Nurse",
+              publication_date: "2025-06-10T09:59:33Z",
+              locations: [{ name: "Dearborn, MI" }],
+              levels: [{ name: "Mid Level" }],
+              tags: ["Nursing"],
+              contents: "<p>Provide care.</p>",
+              refs: {
+                landing_page: "https://www.themuse.com/jobs/dmc/registered-nurse",
+              },
+              company: { name: "DMC Sinai-Grace Hospital" },
+            },
+          ],
+        })) as typeof fetch,
+    });
+
+    const result = await provider.fetchJobs();
+    expect(result.jobs[0]).toMatchObject({
+      title: "Registered Nurse",
+      company: "DMC Sinai-Grace Hospital",
+      location: "Dearborn, MI",
+      experience: "Mid Level",
+      skills: ["Nursing"],
+      provider: "themuse",
+      externalId: "19225596",
+      source: "The Muse",
+      postedAt: "2025-06-10T09:59:33Z",
+    });
+  });
+
+  it("defaults to the Software Engineer category and preserves an explicit category", async () => {
+    const calledUrls: string[] = [];
+    const createProvider = (url: string) =>
+      new TheMuseJobProvider({
+        url,
+        fetchImpl: (async (input: RequestInfo | URL) => {
+          calledUrls.push(String(input));
+          return jsonResponse({ results: [] });
+        }) as typeof fetch,
+      });
+
+    await createProvider("https://www.themuse.com/api/public/jobs?page=1").fetchJobs();
+    await createProvider(
+      "https://www.themuse.com/api/public/jobs?page=1&category=Data%20Science"
+    ).fetchJobs();
+
+    expect(new URL(calledUrls[0]!).searchParams.get("category")).toBe(
+      "Software Engineer"
+    );
+    expect(new URL(calledUrls[0]!).searchParams.get("page")).toBe("0");
+    expect(new URL(calledUrls[1]!).searchParams.get("category")).toBe(
+      "Data Science"
+    );
+    expect(new URL(calledUrls[1]!).searchParams.get("page")).toBe("1");
+  });
+
+  it("appends the registered-app api_key when configured", async () => {
+    let calledUrl = "";
+    const provider = new TheMuseJobProvider({
+      url: "https://www.themuse.com/api/public/jobs?page=1",
+      apiKey: "muse-key",
+      fetchImpl: (async (input: RequestInfo | URL) => {
+        calledUrl = String(input);
+        return jsonResponse({ results: [] });
+      }) as typeof fetch,
+    });
+    await provider.fetchJobs();
+    expect(calledUrl).toContain("api_key=muse-key");
+  });
+
+  it("treats the documented 403 rate-limit response as retryable", async () => {
+    const provider = new TheMuseJobProvider({
+      url: "https://www.themuse.com/api/public/jobs?page=1",
+      fetchImpl: (async () => jsonResponse({ error: "rate limited" }, 403)) as typeof fetch,
+    });
+    await expect(provider.fetchJobs()).rejects.toBeInstanceOf(TransientError);
+  });
+
+  it("treats missing results arrays as transient failures", async () => {
+    const provider = new TheMuseJobProvider({
+      url: "https://www.themuse.com/api/public/jobs?page=1",
+      fetchImpl: (async () => jsonResponse({ ok: true })) as typeof fetch,
+    });
+    await expect(provider.fetchJobs()).rejects.toBeInstanceOf(TransientError);
+  });
+});
+
+describe("RemoteOkJobProvider", () => {
+  it("fetches job records and skips the leading legal notice", async () => {
+    const provider = new RemoteOkJobProvider({
+      url: "https://remoteok.com/api",
+      fetchImpl: (async () =>
+        jsonResponse([
+          { last_updated: 1790265606, legal: "API terms of service..." },
+          {
+            id: "1137429",
+            company: "Workana",
+            position: "Automotive Technician",
+            location: "Spain",
+            tags: ["Cars"],
+            description: "<p>Repair vehicles.</p>",
+            url: "https://remoteOK.com/remote-jobs/remote-technician",
+            date: "2026-09-24T00:00:07+00:00",
+          },
+        ])) as typeof fetch,
+    });
+
+    const result = await provider.fetchJobs();
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0]).toMatchObject({
+      title: "Automotive Technician",
+      company: "Workana",
+      location: "Spain",
+      workMode: "Remote",
+      provider: "remoteok",
+      externalId: "1137429",
+      source: "Remote OK",
+      postedAt: "2026-09-24T00:00:07+00:00",
+    });
+    expect(result.jobs[0]).not.toHaveProperty("skills");
+  });
+
+  it("defaults to the dev tag and preserves explicit tags", async () => {
+    const calledUrls: string[] = [];
+    const createProvider = (url: string) =>
+      new RemoteOkJobProvider({
+        url,
+        fetchImpl: (async (input: RequestInfo | URL) => {
+          calledUrls.push(String(input));
+          return jsonResponse([]);
+        }) as typeof fetch,
+      });
+
+    await createProvider("https://remoteok.com/api").fetchJobs();
+    await createProvider("https://remoteok.com/api?tag=rust").fetchJobs();
+    await createProvider("https://remoteok.com/api?tags=rust,golang").fetchJobs();
+
+    expect(new URL(calledUrls[0]!).searchParams.get("tag")).toBe("dev");
+    expect(new URL(calledUrls[1]!).searchParams.get("tag")).toBe("rust");
+    expect(new URL(calledUrls[2]!).searchParams.get("tags")).toBe(
+      "rust,golang"
+    );
+  });
+
+  it("rejects non-array responses as transient failures", async () => {
+    const provider = new RemoteOkJobProvider({
+      url: "https://remoteok.com/api",
+      fetchImpl: (async () => jsonResponse({ error: "not an array" })) as typeof fetch,
+    });
+    await expect(provider.fetchJobs()).rejects.toBeInstanceOf(TransientError);
+  });
+});
+
+describe("JobicyJobProvider", () => {
+  it("maps remote job records to normalized provider input", async () => {
+    const provider = new JobicyJobProvider({
+      url: "https://jobicy.com/api/v2/remote-jobs?count=10",
+      fetchImpl: (async () =>
+        jsonResponse({
+          success: true,
+          jobs: [
+            {
+              id: 154057,
+              url: "https://jobicy.com/jobs/154057-technical-accountant",
+              jobTitle: "Technical Accountant",
+              companyName: "Kalshi",
+              jobType: ["Full-Time"],
+              jobGeo: "USA",
+              jobLevel: "Senior",
+              jobDescription: "<p>Accounting work.</p>",
+              pubDate: "2026-09-24T18:46:47+00:00",
+              salaryMin: 100000,
+              salaryMax: 180000,
+              salaryCurrency: "USD",
+              salaryPeriod: "yearly",
+            },
+          ],
+        })) as typeof fetch,
+    });
+
+    const result = await provider.fetchJobs();
+    expect(result.jobs[0]).toMatchObject({
+      title: "Technical Accountant",
+      company: "Kalshi",
+      location: "USA",
+      workMode: "Remote",
+      jobType: "Full-Time",
+      experience: "Senior",
+      salary: "100,000 - 180,000 USD (yearly)",
+      provider: "jobicy",
+      externalId: "154057",
+      source: "Jobicy",
+      postedAt: "2026-09-24T18:46:47+00:00",
+    });
+  });
+
+  it("defaults to the engineering industry and preserves an explicit industry", async () => {
+    const calledUrls: string[] = [];
+    const createProvider = (url: string) =>
+      new JobicyJobProvider({
+        url,
+        fetchImpl: (async (input: RequestInfo | URL) => {
+          calledUrls.push(String(input));
+          return jsonResponse({ success: true, jobs: [] });
+        }) as typeof fetch,
+      });
+
+    await createProvider("https://jobicy.com/api/v2/remote-jobs").fetchJobs();
+    await createProvider(
+      "https://jobicy.com/api/v2/remote-jobs?industry=design"
+    ).fetchJobs();
+
+    expect(new URL(calledUrls[0]!).searchParams.get("industry")).toBe(
+      "engineering"
+    );
+    expect(new URL(calledUrls[1]!).searchParams.get("industry")).toBe("design");
+  });
+});
+
+describe("developer job classification", () => {
+  it("accepts development roles and rejects unrelated roles", () => {
+    for (const title of [
+      "Frontend Engineer",
+      "Backend Engineer",
+      "Full Stack Developer",
+      "Mobile Developer",
+      "Software Engineer",
+      "DevOps Engineer",
+      "Cloud Architect",
+      "QA Automation Specialist",
+      "Cybersecurity Engineer",
+      "Data Engineer",
+      "Machine Learning Engineer",
+      "AI Engineer",
+      "Java Developer",
+      "React Developer",
+      "Node.js Engineer",
+    ]) {
+      expect(isDeveloperJob({ title })).toBe(true);
+    }
+
+    for (const title of [
+      "Product Designer",
+      "Product Manager",
+      "Marketing Manager",
+      "Sales Manager",
+      "HR Manager",
+      "Technology Intern",
+      "Graphic Designer",
+      "Automotive Technician",
+      "Strategy Manager",
+      "Paid Social Manager",
+      "VP Pricing & Packaging",
+      "Growth Strategist",
+      "Online Bidder",
+      "Market Research Analyst",
+      "Customer Support Specialist",
+      "Operations Engineer",
+      "Senior Clinical Scientist Immunology",
+      "Lead Support Engineer",
+      "Trade-in Buybulk Intern",
+      "Quality Control Specialist",
+      "Care Navigator",
+      "BMS Service Technician",
+      "Supply Chain Technician",
+      "Technical Program Manager",
+      "Registered Nurse",
+    ]) {
+      expect(isDeveloperJob({ title })).toBe(false);
+    }
+  });
+
+  it("uses structured skills and development context", () => {
+    expect(
+      isDeveloperJob({
+        title: "Engineer",
+        description: "Coordinate company activities and prepare reports.",
+        skills: ["TypeScript"],
+      })
+    ).toBe(false);
+    expect(
+      isDeveloperJob({
+        title: "Engineer",
+        description: "Build production services with TypeScript and Node.js.",
+        skills: ["TypeScript", "Node.js"],
+      })
+    ).toBe(true);
+    expect(
+      isDeveloperJob({
+        title: "Engineer",
+        description: "Deliver internal services.",
+        skills: ["TypeScript", "Node.js"],
+      })
+    ).toBe(true);
+  });
+
+  it("is provider-agnostic: identical jobs classify identically on every source", () => {
+    // Regression guard for the previous Remote OK special case, which keyed the
+    // verdict off the provider name and therefore let site-wide `dev` tags pull
+    // in unrelated roles while rejecting real ones. Relevance must come from
+    // the job itself, never from which API delivered it.
+    const candidates = [
+      {
+        title: "Market Research Analyst",
+        description: "Software engineers support our market research team.",
+        skills: ["golang", "react", "typescript", "python", "cloud", "dev"],
+        expected: false,
+      },
+      {
+        title: "Operations Engineer II",
+        description: "Build production services with TypeScript and Node.js.",
+        skills: ["golang", "react", "typescript"],
+        expected: false,
+      },
+      {
+        title: "Senior Software Engineer",
+        description: "Own TypeScript services end to end.",
+        skills: ["typescript", "node"],
+        expected: true,
+      },
+    ];
+    const providers = [
+      "arbeitnow",
+      "themuse",
+      "remoteok",
+      "jobicy",
+      "adzuna",
+      undefined,
+    ];
+
+    for (const candidate of candidates) {
+      const baseline = isDeveloperJob(candidate);
+
+      for (const provider of providers) {
+        const record = provider ? { provider, ...candidate } : candidate;
+        expect(isDeveloperJob(record), `provider=${provider}`).toBe(baseline);
+      }
+
+      expect(baseline, candidate.title).toBe(candidate.expected);
+    }
+  });
+
+  it("lets a business veto outrank otherwise convincing development text", () => {
+    // "Operations Engineer" is far more often process/manufacturing operations
+    // than software, so it stays rejected even when the description and skills
+    // look technical. This is exactly the class of job the old Remote OK
+    // site-wide `dev` tag was pulling into the dataset.
+    expect(
+      isDeveloperJob({
+        title: "Operations Engineer",
+        description:
+          "Build production services with TypeScript and Node.js on Kubernetes.",
+        skills: ["typescript", "node", "kubernetes"],
+      })
+    ).toBe(false);
+  });
+
+  it("does not treat a company blurb about software as development work", () => {
+    // Real advert: a data-annotation role whose "About us" paragraph lists the
+    // fields the company works in. Naming a discipline is not the same as doing
+    // engineering work, so the tools named in the body must not admit it.
+    expect(
+      isDeveloperJob({
+        title: "Junior Data Analyst",
+        description:
+          "We focus on high-quality data annotation, RLHF and model evaluation " +
+          "across various domains, ranging from STEM and software engineering " +
+          "to linguistics and data science. In this role you will monitor " +
+          "dataset quality and analyse annotator performance using SQL and " +
+          "Python, and work at the intersection of data, machine learning and " +
+          "AI operations. Passionate about AI/ML concepts.",
+      })
+    ).toBe(false);
+
+    // The same discipline vocabulary alongside genuine engineering work and
+    // tagged technologies is still accepted.
+    expect(
+      isDeveloperJob({
+        title: "Machine Learning Engineer",
+        description:
+          "You will build and deploy machine learning services with Python.",
+        skills: ["python", "pytorch"],
+      })
+    ).toBe(true);
+  });
+});
+
 describe("fixture provider ingestion", () => {
+  it("filters non-developer jobs before persistence and reports counts", async () => {
+    const service = ingestionService();
+    const result = await service.runProvider(
+      new FixtureJobProvider("developer-fixture", [
+        rawJob(),
+        rawJob({
+          title: "Marketing Manager",
+          skills: ["Salesforce"],
+          description: "Manage marketing campaigns and market research.",
+        }),
+      ])
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toMatchObject({
+      fetched: 2,
+      accepted: 1,
+      rejected: 1,
+      created: 1,
+    });
+    expect(await prisma.job.count()).toBe(1);
+  });
+
   it("ingests valid jobs and reports counts", async () => {
     const service = ingestionService();
     const result = await service.runProvider(
@@ -486,6 +1072,11 @@ describe("provider registry", () => {
     const registrations = listProviderRegistrations();
     const names = registrations.map((r) => r.name);
     expect(names).toContain("http-json");
+    expect(names).toContain("arbeitnow");
+    expect(names).toContain("adzuna");
+    expect(names).toContain("themuse");
+    expect(names).toContain("remoteok");
+    expect(names).toContain("jobicy");
     expect(names).toContain("linkedin");
     expect(names).toContain("wellfound");
     expect(names).toContain("naukri");

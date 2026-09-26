@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-import { apiRequest, ApiError } from "@/lib/api";
+import { apiRequest, type ApiEnvelope, ApiError } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/format";
 import type {
   DashboardSummary,
   JobMatch,
+  JobMatchSummary,
   Resume,
   UserPreferences,
 } from "@/lib/types";
@@ -25,7 +26,11 @@ import AgentActivity, {
 
 import "./dashboard.css";
 
-const STRONG_MATCH_THRESHOLD = 70;
+const EMPTY_MATCH_SUMMARY: JobMatchSummary = {
+  totalMatches: 0,
+  strongMatches: 0,
+  averageMatchScore: 0,
+};
 
 async function loadOptional<T>(path: string): Promise<T | null> {
   try {
@@ -45,6 +50,8 @@ export default function DashboardPage() {
   const [resume, setResume] = useState<Resume | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
+  const [matchSummary, setMatchSummary] =
+    useState<JobMatchSummary>(EMPTY_MATCH_SUMMARY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,22 +75,32 @@ export default function DashboardPage() {
         setResume(resumeData);
         setPreferences(preferencesData);
 
-        const skills = Array.isArray(resumeData?.skills)
-          ? resumeData.skills.filter(
-              (skill): skill is string => typeof skill === "string"
-            )
-          : [];
+        // Matching requires a profile signal; without one the API correctly
+        // rejects an empty match body, so only query when it can mean something.
+        const canMatch =
+          summaryData.data.resume.exists ||
+          (resumeData?.skills?.length ?? 0) > 0 ||
+          preferencesData !== null;
 
-        if (skills.length > 0) {
-          const matchResponse = await apiRequest<JobMatch[]>("/api/jobs/match", {
+        let matchResponse: ApiEnvelope<JobMatch[]> | null = null;
+
+        if (canMatch) {
+          matchResponse = await apiRequest<JobMatch[]>("/api/jobs/match", {
             method: "POST",
-            body: { skills },
+            // Explicit pagination keeps this bounded: stats come from the
+            // server summary (computed over the full query) while the client
+            // only holds a preview page for the skill-gap insight.
+            body: { page: 1, pageSize: 100 },
           });
-
-          if (cancelled) return;
-
-          setMatches(matchResponse.data);
         }
+
+        if (cancelled) return;
+
+        // The server computes total/strong/average over the full matching
+        // query; the client only reads the (page-1) preview for the skill-gap
+        // insight and never re-derives the threshold.
+        setMatchSummary(matchResponse?.summary ?? EMPTY_MATCH_SUMMARY);
+        setMatches(matchResponse?.data ?? []);
       } catch (caught) {
         if (cancelled) return;
 
@@ -113,7 +130,7 @@ export default function DashboardPage() {
           <Header />
 
           <div className="dashboard-content">
-            <p className="form-notice">Loading your command center…</p>
+            <p className="form-notice">Finding jobs that match your profile...</p>
           </div>
         </div>
       </main>
@@ -145,17 +162,9 @@ export default function DashboardPage() {
     ? resume.skills.length
     : summary.resume.skillsCount;
 
-  const totalJobs = summary.jobs.total;
-  const strongMatches = matches.filter(
-    (match) => match.matchScore >= STRONG_MATCH_THRESHOLD
-  ).length;
-  const averageMatch =
-    matches.length > 0
-      ? Math.round(
-          matches.reduce((total, match) => total + match.matchScore, 0) /
-            matches.length
-        )
-      : 0;
+  const totalJobs = matchSummary.totalMatches;
+  const strongMatches = matchSummary.strongMatches;
+  const averageMatch = matchSummary.averageMatchScore;
 
   const skillsScore =
     skillsCount > 0 ? Math.min(100, 40 + skillsCount * 6) : 0;
@@ -253,9 +262,9 @@ export default function DashboardPage() {
     time: "just now",
     title: "Refreshed your job matches",
     description:
-      matches.length > 0
-        ? `${matches.length} jobs were evaluated against your profile.`
-        : `${totalJobs} jobs are available to evaluate once you add skills.`,
+      totalJobs > 0
+        ? `${totalJobs} jobs were evaluated against your profile.`
+        : `${summary.jobs.total} jobs are available to evaluate once you add skills.`,
     icon: "✦",
     type: "ai",
   });

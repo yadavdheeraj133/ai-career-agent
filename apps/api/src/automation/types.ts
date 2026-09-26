@@ -6,14 +6,15 @@
  * the same isolated test database. `apps/worker` is a thin launcher on top.
  */
 
-export type WorkMode = "Remote" | "Hybrid" | "Onsite";
+export type WorkMode = "Remote" | "Hybrid" | "Onsite" | "Not specified";
 
 export type JobType =
   | "Full-time"
   | "Part-time"
   | "Internship"
   | "Contract"
-  | "Freelance";
+  | "Freelance"
+  | "Not specified";
 
 export interface NormalizedJob {
   title: string;
@@ -24,6 +25,7 @@ export interface NormalizedJob {
   experience?: string;
   salary?: string;
   description?: string;
+  skills?: string[];
   source: string;
   provider: string | null;
   externalId: string | null;
@@ -41,11 +43,19 @@ export interface InvalidJob {
 
 export interface IngestSummary {
   provider: string;
+  /** Records the provider returned. */
   fetched: number;
+  /** Records proven to be developer-relevant and therefore eligible to store. */
+  accepted: number;
+  /** Records dropped because the role is not software/development/technical. */
+  rejected: number;
   created: number;
   updated: number;
   skipped: number;
+  /** Records dropped because they were not developer-relevant or were malformed. */
   invalid: number;
+  /** Developer-relevant records not written because the per-provider cap was hit. */
+  truncated: number;
   notificationsCreated: number;
   jobs: NormalizedJob[];
   errors: InvalidJob[];

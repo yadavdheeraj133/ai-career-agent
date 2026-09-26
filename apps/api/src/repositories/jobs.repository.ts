@@ -8,13 +8,58 @@ export class JobRepository {
     });
   }
 
-  async findAll(options: { includeExpired?: boolean } = {}) {
+  /**
+   * Active jobs, newest first.
+   *
+   * `developerOnly` filters on the stored `isDeveloperJob` verdict rather than
+   * re-classifying rows in application code: the verdict is decided once at
+   * ingestion, is indexed, and keeps the historical dataset stable as the
+   * classifier evolves.
+   */
+  async findAll(
+    options: { includeExpired?: boolean; developerOnly?: boolean } = {}
+  ) {
     return prisma.job.findMany({
-      where: options.includeExpired ? undefined : { status: "ACTIVE" },
+      where: {
+        ...(options.includeExpired ? {} : { status: "ACTIVE" }),
+        ...(options.developerOnly ? { isDeveloperJob: true } : {}),
+      },
       orderBy: {
         createdAt: "desc",
       },
     });
+  }
+
+  /**
+   * Paginated search over the job catalogue.
+   *
+   * Developer relevance is applied in SQL by default so Find Jobs only ever
+   * surfaces the developer dataset; callers can opt out explicitly.
+   */
+  async search(
+    where: Prisma.JobWhereInput,
+    skip: number,
+    take: number,
+    options: { developerOnly?: boolean } = {}
+  ) {
+    const developerOnly = options.developerOnly ?? true;
+    const scope: Prisma.JobWhereInput = {
+      status: "ACTIVE",
+      ...(developerOnly ? { isDeveloperJob: true } : {}),
+      ...where,
+    };
+
+    const [jobs, total] = await prisma.$transaction([
+      prisma.job.findMany({
+        where: scope,
+        orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+        skip,
+        take,
+      }),
+      prisma.job.count({ where: scope }),
+    ]);
+
+    return { jobs, total };
   }
 
   async findById(id: string) {

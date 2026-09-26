@@ -16,6 +16,15 @@ export interface ApiEnvelope<T> {
   message?: string;
   data: T;
   count?: number;
+  total?: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+  summary?: {
+    totalMatches: number;
+    strongMatches: number;
+    averageMatchScore: number;
+  };
   errors?: unknown;
 }
 

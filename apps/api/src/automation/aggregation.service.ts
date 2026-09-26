@@ -11,6 +11,7 @@ import type { Job, Prisma } from "@prisma/client";
 
 import { jobRepository } from "../repositories/jobs.repository.js";
 import { notificationService } from "../services/notifications.service.js";
+import { isDeveloperJob } from "./developer-classifier.js";
 import { identityKey, normalizeRawJob } from "./normalize.js";
 import type { IngestSummary, InvalidJob, NormalizedJob } from "./types.js";
 
@@ -38,6 +39,20 @@ export interface AggregationDeps {
   logger?: AggregationLogger;
 }
 
+export interface AggregationOptions {
+  /**
+   * How many records the provider actually returned. Only needed when the
+   * caller processed a subset (for example when a per-provider cap was applied
+   * upstream); the summary reports this as `fetched`.
+   */
+  fetched?: number;
+  /**
+   * Upper bound on how many developer jobs are written. Applied *after*
+   * relevance filtering so a noisy provider cannot crowd out relevant jobs.
+   */
+  maxJobs?: number;
+}
+
 const silentLogger: AggregationLogger = {
   info: () => {},
   warn: () => {},
@@ -54,6 +69,10 @@ function toJobPayload(job: NormalizedJob): Prisma.JobUncheckedCreateInput {
     experience: job.experience ?? null,
     salary: job.salary ?? null,
     description: job.description ?? null,
+    skills: job.skills ?? undefined,
+    // Every row reaching this point has been proven developer-relevant, so the
+    // verdict is recorded rather than recomputed on every read.
+    isDeveloperJob: true,
     source: job.source,
     provider: job.provider,
     externalId: job.externalId,
@@ -88,19 +107,38 @@ export class AutomationAggregationService {
     this.logger = deps.logger ?? silentLogger;
   }
 
-  async ingest(rawJobs: unknown[], provider: string): Promise<IngestSummary> {
+  /**
+   * Normalizes, filters and stores a batch of raw provider records.
+   *
+   * This is the single choke point for the developer-only ingestion policy: a
+   * record that is not a software/development/technical-engineering role is
+   * rejected here, so no caller — scheduler, worker or the HTTP aggregate
+   * endpoint — can put an unrelated job into the dataset. Classification runs on
+   * the *normalized* record, so providers that spell fields differently
+   * (`position` vs `title`, `tags` vs `skills`) are judged on the same data
+   * that gets stored.
+   */
+  async ingest(
+    rawJobs: unknown[],
+    provider: string,
+    options: AggregationOptions = {}
+  ): Promise<IngestSummary> {
     const summary: IngestSummary = {
       provider,
-      fetched: rawJobs.length,
+      fetched: options.fetched ?? rawJobs.length,
+      accepted: 0,
+      rejected: 0,
       created: 0,
       updated: 0,
       skipped: 0,
       invalid: 0,
+      truncated: 0,
       notificationsCreated: 0,
       jobs: [],
       errors: [],
     };
 
+    const maxJobs = options.maxJobs;
     const seenInBatch = new Set<string>();
     const createdJobs: Job[] = [];
     const updatedJobs: Job[] = [];
@@ -114,6 +152,18 @@ export class AutomationAggregationService {
       }
 
       const job = result.job;
+
+      if (!isDeveloperJob(job)) {
+        summary.rejected += 1;
+        continue;
+      }
+      summary.accepted += 1;
+
+      if (maxJobs !== undefined && summary.created + summary.updated >= maxJobs) {
+        summary.truncated += 1;
+        continue;
+      }
+
       const key = identityKey(job);
       if (seenInBatch.has(key)) {
         summary.skipped += 1;
@@ -190,9 +240,12 @@ export class AutomationAggregationService {
     this.logger.info("Aggregation completed", {
       provider,
       fetched: summary.fetched,
+      accepted: summary.accepted,
+      rejected: summary.rejected,
       created: summary.created,
       updated: summary.updated,
       skipped: summary.skipped,
+      truncated: summary.truncated,
       invalid: summary.invalid,
     });
 

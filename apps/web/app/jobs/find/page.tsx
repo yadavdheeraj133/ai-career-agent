@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 
 import { apiRequest, ApiError } from "@/lib/api";
 import { initials } from "@/lib/format";
-import type { BookmarkList, Job, JobMatch, Resume } from "@/lib/types";
+import type { BookmarkList, Job, JobMatch } from "@/lib/types";
 import "./jobsFind.css";
+
+const PAGE_SIZE = 50;
 
 const workModes = ["Remote", "Hybrid", "Onsite"];
 const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"];
@@ -17,23 +19,21 @@ interface JobScore {
   matchedSkills: string[];
 }
 
-async function loadResumeSkills(): Promise<string[] | null> {
-  try {
-    const response = await apiRequest<Resume>("/resume");
-
-    return Array.isArray(response.data.skills)
-      ? response.data.skills.filter(
-          (skill): skill is string => typeof skill === "string"
-        )
-      : [];
-  } catch (caught) {
-    if (caught instanceof ApiError && caught.status === 404) {
-      return null;
-    }
-
-    throw caught;
-  }
+interface FindFilters {
+  role: string;
+  location: string;
+  workMode: string;
+  jobType: string;
+  experience: string;
 }
+
+const EMPTY_FILTERS: FindFilters = {
+  role: "",
+  location: "",
+  workMode: "",
+  jobType: "",
+  experience: "",
+};
 
 export default function FindJobsPage() {
   const [role, setRole] = useState("");
@@ -42,40 +42,77 @@ export default function FindJobsPage() {
   const [jobType, setJobType] = useState("");
   const [experience, setExperience] = useState("");
 
+  const [activeFilters, setActiveFilters] =
+    useState<FindFilters>(EMPTY_FILTERS);
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [scores, setScores] = useState<Record<string, JobScore>>({});
   const [savedJobs, setSavedJobs] = useState<string[]>([]);
   const [savingId, setSavingId] = useState<string | null>(null);
 
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const runSearch = async (filters: {
-    role: string;
-    location: string;
-    workMode: string;
-    jobType: string;
-    experience: string;
-  }) => {
+  const fetchPage = async (
+    filters: FindFilters,
+    page: number,
+    replace: boolean
+  ) => {
+    const response = await apiRequest<JobMatch[]>("/api/jobs/match", {
+      method: "POST",
+      body: {
+        page,
+        pageSize: PAGE_SIZE,
+        keyword: filters.role.trim() || undefined,
+        location: filters.location.trim() || undefined,
+        workMode: filters.workMode || undefined,
+        jobType: filters.jobType || undefined,
+        experience: filters.experience || undefined,
+      },
+    });
+
+    const pageMatches = response.data ?? [];
+
+    setTotal(response.total ?? 0);
+    setTotalPages(response.totalPages ?? 0);
+    setCurrentPage(page);
+
+    setJobs((current) => {
+      const merged = replace ? [] : [...current];
+      const seen = new Set(merged.map((job) => job.id));
+      for (const match of pageMatches) {
+        if (!seen.has(match.job.id)) {
+          seen.add(match.job.id);
+          merged.push(match.job);
+        }
+      }
+      return merged;
+    });
+
+    setScores((current) => {
+      const next = { ...current };
+      for (const match of pageMatches) {
+        next[match.job.id] = {
+          matchScore: match.matchScore,
+          matchedSkills: match.matchedSkills,
+        };
+      }
+      return next;
+    });
+  };
+
+  const runSearch = async (filters: FindFilters) => {
     setLoading(true);
     setError(null);
+    setActiveFilters(filters);
 
     try {
-      const params = new URLSearchParams();
-
-      if (filters.role.trim()) params.set("keyword", filters.role.trim());
-      if (filters.location.trim()) params.set("location", filters.location.trim());
-      if (filters.workMode) params.set("workMode", filters.workMode);
-      if (filters.jobType) params.set("jobType", filters.jobType);
-      if (filters.experience) params.set("experience", filters.experience);
-
-      const query = params.toString();
-      const response = await apiRequest<Job[]>(
-        `/api/jobs/search${query ? `?${query}` : ""}`
-      );
-
-      setJobs(response.data);
+      await fetchPage(filters, 1, true);
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Unable to search jobs."
@@ -93,40 +130,41 @@ export default function FindJobsPage() {
       setError(null);
 
       try {
-        const [bookmarks, skills, searchResults] = await Promise.all([
-          apiRequest<BookmarkList>("/api/jobs/bookmarks"),
-          loadResumeSkills(),
-          apiRequest<Job[]>("/api/jobs/search"),
-        ]);
+        const bookmarks = await apiRequest<BookmarkList>("/api/jobs/bookmarks");
 
         if (cancelled) return;
 
         setSavedJobs(bookmarks.data.data.map((entry) => entry.jobId));
-        setJobs(searchResults.data);
 
-        if (skills && skills.length > 0) {
-          const matches = await apiRequest<JobMatch[]>("/api/jobs/match", {
-            method: "POST",
-            body: { skills },
-          });
+        const response = await apiRequest<JobMatch[]>("/api/jobs/match", {
+          method: "POST",
+          body: { page: 1, pageSize: PAGE_SIZE },
+        });
 
-          if (cancelled) return;
+        if (cancelled) return;
 
-          const nextScores: Record<string, JobScore> = {};
-          for (const match of matches.data) {
-            nextScores[match.job.id] = {
-              matchScore: match.matchScore,
-              matchedSkills: match.matchedSkills,
-            };
-          }
+        setTotal(response.total ?? 0);
+        setTotalPages(response.totalPages ?? 0);
+        setCurrentPage(1);
 
-          setScores(nextScores);
+        const nextScores: Record<string, JobScore> = {};
+        for (const match of response.data ?? []) {
+          nextScores[match.job.id] = {
+            matchScore: match.matchScore,
+            matchedSkills: match.matchedSkills,
+          };
         }
+        setScores(nextScores);
+        setJobs((response.data ?? []).map((match) => match.job));
       } catch (caught) {
         if (cancelled) return;
 
         setError(
-          caught instanceof Error ? caught.message : "Unable to load jobs."
+          caught instanceof ApiError && caught.status === 400
+            ? "Add your skills to unlock job matching."
+            : caught instanceof Error
+              ? caught.message
+              : "Unable to load jobs."
         );
       } finally {
         if (!cancelled) setLoading(false);
@@ -139,6 +177,23 @@ export default function FindJobsPage() {
       cancelled = true;
     };
   }, []);
+
+  const loadMore = async () => {
+    if (loadingMore || currentPage >= totalPages) return;
+
+    setLoadingMore(true);
+    setError(null);
+
+    try {
+      await fetchPage(activeFilters, currentPage + 1, false);
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : "Unable to load more jobs."
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const toggleSave = async (jobId: string) => {
     const isSaved = savedJobs.includes(jobId);
@@ -167,7 +222,13 @@ export default function FindJobsPage() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     setSearched(true);
-    void runSearch({ role, location, workMode, jobType, experience });
+    void runSearch({
+      role,
+      location,
+      workMode,
+      jobType,
+      experience,
+    });
   };
 
   const hasActiveFilters =
@@ -212,6 +273,8 @@ export default function FindJobsPage() {
 
     return true;
   });
+
+  const hasMore = currentPage < totalPages;
 
   return (
     <main className="feature-page jobs-find-page">
@@ -411,17 +474,35 @@ export default function FindJobsPage() {
               })}
             </div>
           ) : (
-            <div className="job-empty-state">
-              <div className="empty-state-icon">⌕</div>
+            !loading && (
+              <div className="job-empty-state">
+                <div className="empty-state-icon">⌕</div>
 
-              <h3>No matching jobs yet</h3>
+                <h3>No matching jobs yet</h3>
 
-              <p>
-                Try adjusting your filters or searching for a more
-                general role.
-              </p>
-            </div>
+                <p>
+                  {total === 0
+                    ? "Add your skills and job preferences to start receiving matches."
+                    : "Try adjusting your filters or searching for a more general role."}
+                </p>
+              </div>
+            )
           )}
+
+          {hasMore ? (
+            <div className="load-more-wrap">
+              <button
+                type="button"
+                className="load-more-button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+              >
+                {loadingMore
+                  ? "Loading…"
+                  : `Load more (${total - jobs.length} remaining)`}
+              </button>
+            </div>
+          ) : null}
         </section>
 
         <section className="job-insight-card">

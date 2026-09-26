@@ -75,7 +75,7 @@ describe("POST /api/application/cover-letter", () => {
     );
   });
 
-  it("returns 500 when the model fails", async () => {
+  it("returns 503 when the model fails", async () => {
     setAIFailure();
 
     const res = await request(app)
@@ -83,7 +83,9 @@ describe("POST /api/application/cover-letter", () => {
       .set(bearer(user.token))
       .send({ resume: RESUME_TEXT, jobDescription: JOB_DESCRIPTION_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
+    expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe("AI_UPSTREAM_UNAVAILABLE");
   });
 });
 

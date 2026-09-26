@@ -125,6 +125,13 @@ model Job {
   experience  String?
   salary      String?
   description String?
+  skills      Json?
+
+  // Developer-relevance verdict, decided once at ingestion by
+  // `automation/developer-classifier.ts` and stored so read paths can filter in
+  // SQL. Nullable so pre-existing rows keep their (NULL = unclassified) value
+  // and are never rewritten or deleted by the migration.
+  isDeveloperJob Boolean?
 
   source      String   // LinkedIn, Wellfound, etc.
   url         String   @unique
@@ -150,6 +157,9 @@ model Job {
   @@index([externalId])
   @@index([status])
   @@index([lastSeenAt])
+  // Find Jobs and Job Intelligence are scoped to developer-relevant jobs, so the
+  // verdict is indexed rather than filtered in application code.
+  @@index([isDeveloperJob, status])
   // A provider must never supply the same external job twice: concurrent
   // ingestion runs are serialized by this constraint (NULLs are distinct in
   // PostgreSQL, so provider-less rows are unaffected).

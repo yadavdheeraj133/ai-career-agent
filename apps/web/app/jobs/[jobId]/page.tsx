@@ -201,6 +201,7 @@ export default function JobDetailPage() {
 
       setApplicationStatus(response.data.status as JobApplicationDetail["status"]);
       setNotice("Application added to your tracker.");
+      window.open(job.url, "_blank", "noopener,noreferrer");
     } catch (caught) {
       setNotice(
         caught instanceof Error ? caught.message : "Unable to apply right now."
@@ -362,7 +363,7 @@ export default function JobDetailPage() {
 
                 <div className="job-fact">
                   <span>Posted</span>
-                  <strong>{formatDate(job.createdAt)}</strong>
+                  <strong>{formatDate(job.postedAt ?? job.createdAt)}</strong>
                 </div>
               </div>
             </section>

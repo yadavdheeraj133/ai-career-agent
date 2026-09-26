@@ -35,7 +35,7 @@ export default function AIAgent({
         </div>
 
         <div className="ai-agent-message">
-          {hasSkills ? (
+          {total > 0 ? (
             <>
               <h3>
                 I found <strong>{total} jobs</strong> that match
@@ -49,14 +49,11 @@ export default function AIAgent({
             </>
           ) : (
             <>
-              <h3>
-                There are <strong>{total} jobs</strong> available to
-                match.
-              </h3>
+              <h3>No matching jobs found yet.</h3>
 
               <p>
-                Add skills to your profile so I can score how well
-                each role fits you.
+                Add more skills or update your role and location
+                preferences to improve future matches.
               </p>
             </>
           )}

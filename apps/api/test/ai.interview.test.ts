@@ -76,7 +76,7 @@ describe("POST /api/interview/prepare", () => {
     );
   });
 
-  it("returns 500 when the model fails", async () => {
+  it("returns 503 when the model fails", async () => {
     setAIFailure();
 
     const res = await request(app)
@@ -84,7 +84,8 @@ describe("POST /api/interview/prepare", () => {
       .set(bearer(user.token))
       .send({ resume: RESUME_TEXT, jobDescription: JOB_DESCRIPTION_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe("AI_UPSTREAM_UNAVAILABLE");
   });
 });
 

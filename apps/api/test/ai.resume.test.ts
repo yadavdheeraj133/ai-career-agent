@@ -94,7 +94,7 @@ describe("POST /api/resume/analyze", () => {
     );
   });
 
-  it("returns 500 when the model is unreachable", async () => {
+  it("returns 503 when the model is unreachable", async () => {
     setAIFailure();
 
     const res = await request(app)
@@ -102,11 +102,12 @@ describe("POST /api/resume/analyze", () => {
       .set(bearer(user.token))
       .send({ resume: RESUME_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
     expect(res.body.success).toBe(false);
+    expect(res.body.code).toBe("AI_UPSTREAM_UNAVAILABLE");
   });
 
-  it("returns 500 when the model returns malformed JSON", async () => {
+  it("returns 502 when the model returns malformed JSON", async () => {
     setAIRawContent("this is not json");
 
     const res = await request(app)
@@ -114,7 +115,8 @@ describe("POST /api/resume/analyze", () => {
       .set(bearer(user.token))
       .send({ resume: RESUME_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(502);
+    expect(res.body.code).toBe("AI_INVALID_RESPONSE");
   });
 
   it("returns 500 when the model output violates the response schema", async () => {
@@ -184,7 +186,7 @@ describe("POST /api/resume/ats", () => {
     );
   });
 
-  it("returns 500 when the model fails", async () => {
+  it("returns 503 when the model fails", async () => {
     setAIFailure();
 
     const res = await request(app)
@@ -192,7 +194,8 @@ describe("POST /api/resume/ats", () => {
       .set(bearer(user.token))
       .send({ resume: RESUME_TEXT, jobDescription: JOB_DESCRIPTION_TEXT });
 
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(503);
+    expect(res.body.code).toBe("AI_UPSTREAM_UNAVAILABLE");
   });
 });
 

@@ -582,16 +582,19 @@ closed in production.
 
 ### Job provider architecture (worker ingestion)
 
-Scheduled ingestion is performed by the worker (`apps/worker`), never by
-scraping websites. There are no bundled LinkedIn / Naukri / Wellfound
-adapters, and none are planned: providers are legitimate,
-deployment-configured HTTP JSON feeds plus an optional local fixture.
+Scheduled ingestion is performed by the worker (`apps/worker`) through
+legitimate public or registered APIs; it never scrapes websites. Built-in
+adapters cover Arbeitnow, Adzuna, The Muse, Remote OK, and Jobicy, alongside
+deployment-configured HTTP JSON feeds and an optional local fixture.
 
 **Configuration**
 
 ``` text
-JOB_PROVIDER_URLS="acme|https://jobs.acme.example/api/v1/jobs|data.jobs,partner|https://partner.example/feed"
-JOB_PROVIDER_HEADERS='{"acme":{"Authorization":"Bearer <secret>"}}'
+JOB_PROVIDER_URLS="arbeitnow|https://arbeitnow.com/api/job-board-api|data,themuse|https://www.themuse.com/api/public/jobs?page=0,remoteok|https://remoteok.com/api,jobicy|https://jobicy.com/api/v2/remote-jobs?count=100,adzuna|https://api.adzuna.com/v1/api/jobs/gb/search/1"
+JOB_PROVIDER_HEADERS='{"custom":{"Authorization":"Bearer <secret>"}}'
+ADZUNA_APP_ID=<registered Adzuna app id>
+ADZUNA_APP_KEY=<registered Adzuna app key>
+THE_MUSE_API_KEY=<optional registered app key>
 JOB_FIXTURE_FILE="./fixtures/jobs.json"
 AUTOMATION_ENABLED=true
 AUTOMATION_RUN_ON_START=true
@@ -606,6 +609,25 @@ WORKER_SECRET=<shared secret accepted via the x-worker-secret header>
 ADMIN_EMAILS=ops@example.com
 ```
 
+**Built-in developer providers**
+
+| Provider | Authentication | Official developer filter | Additional fallback |
+| --- | --- | --- | --- |
+| Arbeitnow | None | No server-side developer filter is offered | Fetch the official JSON feed, then apply the shared developer-role classifier |
+| Adzuna | `ADZUNA_APP_ID` and `ADZUNA_APP_KEY` | Default `what_or` software-development query; preserve any explicit `what*`, `title_only`, or `category` query | Apply the shared classifier |
+| The Muse | Optional `THE_MUSE_API_KEY` | Default `category=Software Engineer`; preserve an explicit category | Apply the shared classifier |
+| Remote OK | None | Default `tag=dev`; preserve explicit `tag` or `tags` | Apply the shared classifier |
+| Jobicy | None | Default `industry=engineering`; preserve an explicit industry | Apply the shared classifier |
+
+The official method references are [Arbeitnow](https://www.arbeitnow.com/blog/job-board-api),
+[Adzuna](https://developer.adzuna.com/docs/search), [The Muse](https://www.themuse.com/developers/api/v2),
+[Remote OK](https://remoteok.com/faq), and [Jobicy](https://jobicy.com/jobs-rss-feed).
+Arbeitnow filtering is deliberately local because its documented API does not
+offer a developer-only parameter. Remote OK's `tags` value is a site-wide
+taxonomy rather than a per-job skill list, so it is not persisted as job
+skills; Remote OK rows are classified from their actual title and description.
+Explicit query parameters in configured URLs are never overwritten.
+
 - `JOB_PROVIDER_URLS` entries are `name|url[|jobsPath]`; `jobsPath` selects a
   nested jobs array (for example `data.jobs`). Without it, a top-level array
   or the `jobs` / `data` / `results` / `items` keys are accepted.
@@ -617,6 +639,16 @@ ADMIN_EMAILS=ops@example.com
 
 **Pipeline guarantees**
 
+- Built-in provider results pass through a conservative shared classifier before
+  normalization. It accepts explicit development roles and development evidence
+  in the title, description, skills, or raw requirements while rejecting
+  business, design, sales, marketing, HR, finance, legal, education, and health
+  roles. Existing catalogue rows are classified at read time by search and
+  matching, so legacy data is preserved rather than deleted or rewritten.
+- Each built-in provider summary reports `fetched`, `accepted`, and `rejected`
+  counts. `fetched` is the number returned by the provider, while `accepted` is
+  the number that passed developer-role classification before per-provider
+  limits, normalization, deduplication, and persistence.
 - Provider field aliases are normalized (`jobTitle`, `companyName`,
   `applyUrl`/`link`, `externalId`/`jobId`, `work_mode`, `job_type`,
   posting-date variants); malformed records are skipped and reported without
@@ -647,7 +679,14 @@ location
 workMode
 jobType
 source
+experience
+page
+pageSize
 ```
+
+Results include only developer roles. Non-developer legacy rows remain stored
+and accessible through their existing detail endpoints but are omitted from
+search and matching.
 
 Example:
 
@@ -678,6 +717,10 @@ Match available jobs against candidate preferences/skills.
   "preferredJobType": "Full-time"
 }
 ```
+
+Matching includes only developer roles. A user without a saved profile or
+supplied skills can send a pagination-only body (for example `{ "page": 1 }`)
+to browse available developer jobs with neutral `0` match scores.
 
 ------------------------------------------------------------------------
 
