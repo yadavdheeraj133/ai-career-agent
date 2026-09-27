@@ -25,10 +25,9 @@ export function ResumePreviewCard({ resume }: ResumePreviewCardProps) {
       <div className="resume-preview-head">
         <div>
           <p className="card-label">YOUR RESUME</p>
-
           <h2>{resume.name || resume.title}</h2>
+          <p className="resume-preview-filename">{resume.filename}</p>
         </div>
-
         <span className="resume-preview-badge">
           {resume.experience.length} role{resume.experience.length === 1 ? "" : "s"}
         </span>

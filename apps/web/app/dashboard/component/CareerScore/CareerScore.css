@@ -265,3 +265,29 @@
     padding: 10px;
   }
 }
+
+/* ================================
+    DARK MODE
+   ================================ */
+
+html[data-theme="dark"] .career-score-card {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 30, 54, 0.98),
+    rgba(25, 22, 44, 0.94)
+  );
+  border-color: rgba(112, 87, 232, 0.15);
+}
+
+html[data-theme="dark"] .career-score-ring-inner {
+  background: #1e1b33;
+}
+
+html[data-theme="dark"] .career-score-metrics div {
+  background: rgba(112, 87, 232, 0.08);
+}
+
+html[data-theme="dark"] .career-score-badge {
+  background: rgba(79, 213, 208, 0.12);
+  color: #4fd5d0;
+}

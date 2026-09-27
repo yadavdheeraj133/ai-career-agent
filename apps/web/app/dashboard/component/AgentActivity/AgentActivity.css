@@ -171,3 +171,28 @@
     gap: 10px;
   }
 }
+
+/* ================================
+    DARK MODE
+   ================================ */
+
+html[data-theme="dark"] .activity-card {
+  background: rgba(34, 30, 54, 0.9);
+  border-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .activity-item {
+  border-bottom-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .activity-title-row h3 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .activity-title-row span {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .activity-content p {
+  color: #aaa5bd;
+}

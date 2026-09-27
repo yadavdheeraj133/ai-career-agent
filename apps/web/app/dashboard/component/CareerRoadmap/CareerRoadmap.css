@@ -327,11 +327,61 @@
 @media (max-width: 380px) {
   .roadmap-view-button {
     padding: 7px 8px;
-
     font-size: 9px;
   }
 
   .roadmap-view-button span {
     display: none;
   }
+}
+
+/* ================================
+    DARK MODE
+   ================================ */
+
+html[data-theme="dark"] .roadmap-card {
+  background: rgba(34, 30, 54, 0.92);
+  border-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .roadmap-header h3 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .roadmap-label {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .roadmap-step-content strong {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .roadmap-step span {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .roadmap-marker {
+  border-color: #3a3450;
+  background: #221e36;
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .roadmap-step.current .roadmap-marker {
+  box-shadow: 0 0 0 5px rgba(112, 87, 232, 0.2);
+}
+
+html[data-theme="dark"] .roadmap-connector {
+  background: #3a3450;
+}
+
+html[data-theme="dark"] .roadmap-next {
+  background: linear-gradient(
+    135deg,
+    rgba(112, 87, 232, 0.1),
+    rgba(79, 213, 208, 0.06)
+  );
+}
+
+html[data-theme="dark"] .roadmap-next p {
+  color: #aaa5bd;
 }

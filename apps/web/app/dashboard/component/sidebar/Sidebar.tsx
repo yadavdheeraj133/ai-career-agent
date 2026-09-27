@@ -9,11 +9,6 @@ const navigationItems = [
     href: "/dashboard",
   },
   {
-    label: "Jobs",
-    icon: "◫",
-    href: "/dashboard/jobs",
-  },
-  {
     label: "Resume",
     icon: "▤",
     href: "/dashboard/resume",

@@ -318,11 +318,13 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <CareerInsights insights={insights} />
+          <div className="dashboard-insights-row">
+            <CareerInsights insights={insights} />
 
-          {resume.document ? (
-            <ResumePreviewCard resume={resume.document} />
-          ) : null}
+            {resume.document ? (
+              <ResumePreviewCard resume={resume.document} />
+            ) : null}
+          </div>
 
           <CareerRoadmap targetRole={preferences?.jobRole ?? null} />
 

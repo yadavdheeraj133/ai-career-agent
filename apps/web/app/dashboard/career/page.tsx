@@ -137,10 +137,10 @@ export default function CareerHubPage() {
 
             <h1>Career</h1>
 
-            <p className="feature-description">
-              Keep your career preferences up to date. These drive every
-              match score, prediction and recommendation the agent makes.
-            </p>
+<p className="feature-description">
+               Keep your career preferences up to date. These drive every
+               match score, prediction, and recommendation the agent makes.
+             </p>
           </div>
         </header>
 

@@ -49,6 +49,7 @@ export interface ResumeAchievement {
 export interface ResumeDocument {
   title: string;
   name: string | null;
+  filename: string | null;
   email: string | null;
   phone: string | null;
   location: string | null;
@@ -141,6 +142,7 @@ export function tailoredToDocument(tailored: TailoredResume): ResumeDocument {
   return {
     title: tailored.title,
     name: null,
+    filename: null,
     email: null,
     phone: null,
     location: null,

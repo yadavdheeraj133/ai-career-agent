@@ -600,3 +600,43 @@ html[data-theme="dark"] .header-search-result:hover,
 html[data-theme="dark"] .header-notification-item:hover {
   background: #332d4d;
 }
+
+/* ================================
+    SEARCH BUTTON - More Prominent
+   ================================ */
+
+.header-search-button {
+  min-width: 180px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid rgba(232, 229, 242, 0.9);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #8a8699;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.header-search-button:hover {
+  background: #ffffff;
+  color: var(--primary);
+  border-color: rgba(112, 87, 232, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(47, 38, 88, 0.06);
+}
+
+html[data-theme=dark] .header-search-button {
+  background: rgba(34, 30, 54, 0.88);
+  border-color: var(--border);
+  color: #6a6480;
+}
+
+html[data-theme=dark] .header-search-button:hover {
+  background: #2b2642;
+  color: #b8b0d4;
+}

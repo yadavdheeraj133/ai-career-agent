@@ -195,3 +195,30 @@
     padding: 18px;
   }
 }
+
+/* ================================
+    DARK MODE
+   ================================ */
+
+html[data-theme="dark"] .insight-card {
+  background: rgba(34, 30, 54, 0.9);
+  border-color: rgba(58, 52, 80, 0.8);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+html[data-theme="dark"] .insight-card:hover {
+  box-shadow: 0 17px 35px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .insight-card h3 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .insight-card > p {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .insights-powered {
+  background: rgba(112, 87, 232, 0.15);
+  color: #b8b0d4;
+}

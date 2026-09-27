@@ -64,6 +64,7 @@ export interface ResumeAchievement {
 
 export interface ResumeDocument extends ResumeContact {
   title: string;
+  filename: string | null;
   summary: string;
   skills: string[];
   experience: ResumeExperience[];
@@ -77,6 +78,7 @@ export interface ResumeDocument extends ResumeContact {
 export const EMPTY_RESUME_DOCUMENT: ResumeDocument = {
   title: "",
   name: null,
+  filename: null,
   email: null,
   phone: null,
   location: null,
@@ -98,6 +100,7 @@ type Dict = Record<string, unknown>;
 /** A `Resume` row as Prisma returns it, including the optional upload fields. */
 export interface ResumeRow {
   title?: string | null;
+  filename?: string | null;
   summary?: string | null;
   experience?: unknown;
   education?: unknown;
@@ -608,24 +611,25 @@ export function toResumeDocument(row: ResumeRow | null | undefined): ResumeDocum
     row.skills ?? parsedProfileValue(profile, "skills")
   );
 
-  return {
-    title: firstNonEmpty(row.title) || "Resume",
-    name: firstNonEmpty(parsedProfileValue(profile, "name")) || inferName(rawText, ""),
-    email: firstNonEmpty(parsedProfileValue(profile, "email"), emailFromRaw) || null,
-    phone: firstNonEmpty(parsedProfileValue(profile, "phone"), phoneFromRaw) || null,
-    location: firstNonEmpty(parsedProfileValue(profile, "location")) || null,
-    currentRole: firstNonEmpty(parsedProfileValue(profile, "currentRole")) || null,
-    targetRole: firstNonEmpty(parsedProfileValue(profile, "targetRole")) || null,
-    links: collectLinks(row.links, linksFromRaw),
-    summary: firstNonEmpty(row.summary, parsedProfileValue(profile, "summary")),
-    skills,
-    experience,
-    education,
-    projects,
-    certifications,
-    achievements,
-    languages: uniqueStrings(row.languages ?? languagesFromRaw, 20),
-  };
+return {
+      title: firstNonEmpty(row.title) || "Resume",
+      name: firstNonEmpty(parsedProfileValue(profile, "name")) || inferName(rawText, ""),
+      filename: row.filename ?? null,
+      email: firstNonEmpty(parsedProfileValue(profile, "email"), emailFromRaw) || null,
+      phone: firstNonEmpty(parsedProfileValue(profile, "phone"), phoneFromRaw) || null,
+      location: firstNonEmpty(parsedProfileValue(profile, "location")) || null,
+      currentRole: firstNonEmpty(parsedProfileValue(profile, "currentRole")) || null,
+      targetRole: firstNonEmpty(parsedProfileValue(profile, "targetRole")) || null,
+      links: collectLinks(row.links, linksFromRaw),
+      summary: firstNonEmpty(row.summary, parsedProfileValue(profile, "summary")),
+      skills,
+      experience,
+      education,
+      projects,
+      certifications,
+      achievements,
+      languages: uniqueStrings(row.languages ?? languagesFromRaw, 20),
+    };
 }
 
 function dateRange(start: string, end: string, currentlyWorking: boolean): string {

@@ -75,15 +75,13 @@ export default function ResumeSectionPage() {
             <div className="resume-hub-current-head">
               <div>
                 <p className="card-label">CURRENT RESUME</p>
-
                 <h2>{resume.document.title}</h2>
+                <p className="resume-hub-filename">{resume.document.filename}</p>
               </div>
-
               <Link href="/dashboard/resume/view" className="resume-hub-link">
                 Open full view →
               </Link>
             </div>
-
             <ResumeViewer resume={resume.document} variant="compact" showActions={false} />
           </section>
         ) : null}

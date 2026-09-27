@@ -8,7 +8,7 @@
 
 
 /* =========================================
-   DASHBOARD PAGE
+    DASHBOARD PAGE
 ========================================= */
 
 .dashboard-page {
@@ -29,9 +29,34 @@
     var(--background);
 }
 
+/* Dark mode enhancements */
+html[data-theme="dark"] .dashboard-page {
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(112, 87, 232, 0.05),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 10% 85%,
+      rgba(79, 213, 208, 0.03),
+      transparent 25%
+    ),
+    var(--background);
+}
+
+html[data-theme="dark"] .ai-agent-card {
+  background: linear-gradient(
+    135deg,
+    #7057e8,
+    #8068ec 52%,
+    #947eff
+  );
+}
+
 
 /* =========================================
-   MAIN CONTENT AREA
+    MAIN CONTENT AREA
 ========================================= */
 
 .dashboard-main {
@@ -46,7 +71,7 @@
 
 
 /* =========================================
-   CONTENT CONTAINER
+    CONTENT CONTAINER
 ========================================= */
 
 .dashboard-content {
@@ -59,7 +84,7 @@
 
 
 /* =========================================
-   COMMAND CENTER
+    COMMAND CENTER
 ========================================= */
 
 .dashboard-command-center {
@@ -80,9 +105,27 @@
   width: 100%;
 }
 
+/* =========================================
+    INSIGHTS + RESUME ROW
+========================================= */
+
+.dashboard-insights-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr);
+
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.dashboard-insights-row > .career-insights {
+  margin-bottom: 0;
+}
 
 /* =========================================
-   TABLET
+    TABLET
 ========================================= */
 
 @media (max-width: 1050px) {
@@ -93,11 +136,15 @@
   .dashboard-command-grid {
     grid-template-columns: 1fr;
   }
+
+  .dashboard-insights-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 
 /* =========================================
-   SMALL TABLET
+    SMALL TABLET
 ========================================= */
 
 @media (max-width: 900px) {
@@ -112,7 +159,7 @@
 
 
 /* =========================================
-   MOBILE
+    MOBILE
 ========================================= */
 
 @media (max-width: 700px) {
@@ -131,11 +178,16 @@
   .dashboard-command-grid {
     gap: 12px;
   }
+
+  .dashboard-insights-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 
 /* =========================================
-   SMALL MOBILE
+    SMALL MOBILE
 ========================================= */
 
 @media (max-width: 480px) {
@@ -154,7 +206,7 @@
 
 
 /* =========================================
-   VERY SMALL PHONES
+    VERY SMALL PHONES
 ========================================= */
 
 @media (max-width: 360px) {

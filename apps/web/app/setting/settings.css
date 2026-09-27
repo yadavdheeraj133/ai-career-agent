@@ -583,6 +583,51 @@ html[data-theme="dark"] .settings-page .danger-button {
   color: #ff9d9d;
 }
 
+html[data-theme="dark"] .settings-page .settings-panel {
+  background: rgba(34, 30, 54, 0.92);
+  border-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .settings-page .settings-field input[type="text"],
+html[data-theme="dark"] .settings-page .settings-field input[type="password"],
+html[data-theme="dark"] .settings-page .settings-field select {
+  background: #1e1b33;
+  border-color: rgba(58, 52, 80, 0.8);
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .settings-page .settings-section h2 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .settings-page .settings-field label {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .settings-page .settings-toggle strong {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .settings-page .settings-toggle small {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .settings-page .settings-choice {
+  background: #1e1b33;
+  border-color: rgba(58, 52, 80, 0.8);
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .settings-page .settings-range-value {
+  background: #1e1b33;
+  border-color: rgba(58, 52, 80, 0.8);
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .settings-page .settings-actions {
+  border-top-color: rgba(58, 52, 80, 0.8);
+}
+
 /* RESPONSIVE */
 
 @media (max-width: 900px) {

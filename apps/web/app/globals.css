@@ -1426,3 +1426,25 @@ button {
   color: var(--primary);
   font-weight: 800;
 }
+
+/* ================================
+    DARK MODE GLOBAL UPDATES
+   ================================ */
+
+html[data-theme=dark] .ai-panel {
+  background: rgba(34, 30, 54, 0.9);
+}
+
+html[data-theme=dark] .ai-textarea,
+html[data-theme=dark] .ai-input {
+  background: #1e1b33;
+}
+
+html[data-theme=dark] .ai-empty {
+  background: rgba(34, 30, 54, 0.6);
+}
+
+html[data-theme=dark] .ai-tag.muted {
+  background: rgba(58, 52, 80, 0.4);
+  color: #aaa5bd;
+}

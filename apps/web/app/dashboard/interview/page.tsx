@@ -45,14 +45,11 @@ export default function InterviewSectionPage() {
         <div className="section-card-grid">
           {items.map((item) => (
             <Link href={item.href} className="section-link-card" key={item.title}>
-              <span className="section-link-icon">{item.icon}</span>
-
-              <span className="section-link-content">
+              <div className="section-link-content">
+                <span className="section-link-icon">{item.icon}</span>
                 <h2>{item.title}</h2>
-
                 <p>{item.description}</p>
-              </span>
-
+              </div>
               <span className="section-link-arrow">→</span>
             </Link>
           ))}

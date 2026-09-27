@@ -298,3 +298,16 @@
     font-size: 16px;
   }
 }
+
+/* ================================
+    DARK MODE
+   ================================ */
+
+html[data-theme="dark"] .ai-agent-card {
+  background: linear-gradient(
+    135deg,
+    #7057e8,
+    #8068ec 52%,
+    #947eff
+  );
+}

@@ -51,11 +51,11 @@
   font-weight: 700;
 }
 
-/* Grid of feature link cards */
+/* Grid of feature link cards - vertical stacking */
 
 .dashboard-section-page .section-card-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
@@ -86,6 +86,14 @@
   font-size: 17px;
   font-weight: 820;
   letter-spacing: -0.02em;
+}
+
+.dashboard-section-page .resume-hub-filename {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  word-break: break-all;
 }
 
 .dashboard-section-page .resume-hub-link {
@@ -166,12 +174,38 @@
   color: var(--primary);
 }
 
+/* DARK MODE */
+
+html[data-theme="dark"] .dashboard-section-page .section-link-card {
+  background: rgba(34, 30, 54, 0.9);
+  border-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .dashboard-section-page .section-link-content h2 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .dashboard-section-page .section-link-content p {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .dashboard-section-page .section-eyebrow,
+html[data-theme="dark"] .dashboard-section-page .card-label {
+  color: #b8b0d4;
+}
+
+html[data-theme="dark"] .dashboard-section-page .section-description {
+  color: #aaa5bd;
+}
+
+/* RESPONSIVE */
+
 @media (max-width: 760px) {
   .dashboard-section-page {
     padding: 28px 18px 48px;
   }
 
   .dashboard-section-page .section-card-grid {
-    grid-template-columns: 1fr;
+    gap: 12px;
   }
 }

@@ -162,14 +162,13 @@ export default function Header() {
       <div className="dashboard-header-right">
         <button
           type="button"
-          className="header-icon-button"
-          aria-label="Search"
-          aria-expanded={searchOpen}
+          className="header-search-button"
+          aria-label="Search jobs"
           onClick={() => setSearchOpen((prev) => !prev)}
         >
           <span>⌕</span>
+          <span>Search jobs...</span>
         </button>
-
         {searchOpen && (
           <div className="header-search-panel">
             <form

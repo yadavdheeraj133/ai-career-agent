@@ -233,8 +233,8 @@
 
 .jobs-find-page .job-result-card {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  gap: 16px;
   padding: 22px 24px;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -340,9 +340,10 @@
 
 .jobs-find-page .job-result-actions {
   display: flex;
-  flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .jobs-find-page .save-job-button,
@@ -385,6 +386,48 @@
   border: 0;
   background: var(--primary);
   color: #ffffff;
+}
+
+/* DARK MODE */
+
+html[data-theme="dark"] .jobs-find-page .job-result-card {
+  background: rgba(34, 30, 54, 0.9);
+  border-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .jobs-find-page .job-company {
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .jobs-find-page .job-result-actions {
+  border-top-color: rgba(58, 52, 80, 0.8);
+}
+
+html[data-theme="dark"] .jobs-find-page .save-job-button {
+  background: #1e1b33;
+  border-color: rgba(58, 52, 80, 0.8);
+  color: #aaa5bd;
+}
+
+html[data-theme="dark"] .jobs-find-page .section-count {
+  background: rgba(34, 30, 54, 0.9);
+}
+
+html[data-theme="dark"] .jobs-find-page .section-header h2 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .jobs-find-page .job-insight-card {
+  background: rgba(112, 87, 232, 0.05);
+  border-color: rgba(112, 87, 232, 0.18);
+}
+
+html[data-theme="dark"] .jobs-find-page .job-insight-card h2 {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .jobs-find-page .job-insight-card p {
+  color: #aaa5bd;
 }
 
 /* ================================
@@ -555,24 +598,13 @@
   }
 
   .jobs-find-page .job-result-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .jobs-find-page .job-match-score {
-    flex-direction: row;
-    gap: 6px;
+    gap: 12px;
+    padding: 18px 20px;
   }
 
   .jobs-find-page .job-result-actions {
-    width: 100%;
     flex-direction: row;
-  }
-
-  .jobs-find-page .save-job-button,
-  .jobs-find-page .view-job-button {
-    flex: 1;
+    justify-content: flex-start;
   }
 
   .jobs-find-page .job-insight-card {
