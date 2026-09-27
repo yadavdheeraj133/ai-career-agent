@@ -3,6 +3,7 @@
 import { Request, Response, NextFunction } from "express";
 
 import { careerAIService } from "../services/resume-ai.service.js";
+import { resolveResumeInput } from "./ai-resume-input.js";
 
 const MAX_INPUT_LENGTH = 50000;
 
@@ -11,19 +12,22 @@ function requireString(value: unknown, maxLength = MAX_INPUT_LENGTH): value is s
 }
 
 export class AIController {
+  /**
+   * Loads the resume for an AI call, preferring the caller's own text and
+   * falling back to their stored primary resume.
+   */
+  private resolveResume(req: Request, res: Response): Promise<string | null> {
+    return resolveResumeInput(req, res);
+  }
+
   async analyzeResume(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume } = req.body;
-
-      if (!requireString(resume)) {
-        res.status(400).json({
-          success: false,
-          message: "resume is required and must be a non-empty string.",
-        });
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
         return;
       }
 
@@ -46,12 +50,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -78,12 +87,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -111,12 +125,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -143,12 +162,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -176,12 +200,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -208,12 +237,17 @@ export class AIController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await this.resolveResume(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }

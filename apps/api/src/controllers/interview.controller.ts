@@ -5,6 +5,7 @@ import {
 } from "express";
 
 import { interviewAIService } from "../services/interview-ai.service.js";
+import { resolveResumeInput } from "./ai-resume-input.js";
 
 const MAX_INPUT_LENGTH = 50000;
 
@@ -19,12 +20,17 @@ export class InterviewController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }

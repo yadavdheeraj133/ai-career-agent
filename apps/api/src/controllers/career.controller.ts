@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 import { careerGuidanceAIService } from "../services/career-ai.service.js";
+import { resolveResumeInput } from "./ai-resume-input.js";
 
 const MAX_INPUT_LENGTH = 50000;
 
@@ -15,16 +16,20 @@ export class CareerController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
+
       const {
-        resume,
         currentRole,
         careerGoal,
       } = req.body;
 
-      if (!requireString(resume) || !requireString(careerGoal)) {
+      if (!requireString(careerGoal)) {
         res.status(400).json({
           success: false,
-          message: "resume and careerGoal are required and must be non-empty strings.",
+          message: "careerGoal is required and must be a non-empty string.",
         });
         return;
       }
@@ -53,16 +58,20 @@ export class CareerController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
+
       const {
-        resume,
         currentRole,
         careerGoal,
       } = req.body;
 
-      if (!requireString(resume) || !requireString(careerGoal)) {
+      if (!requireString(careerGoal)) {
         res.status(400).json({
           success: false,
-          message: "resume and careerGoal are required and must be non-empty strings.",
+          message: "careerGoal is required and must be a non-empty string.",
         });
         return;
       }
@@ -91,12 +100,17 @@ export class CareerController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, careerGoal } = req.body;
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(careerGoal)) {
+      const careerGoal = req.body?.careerGoal;
+
+      if (!requireString(careerGoal)) {
         res.status(400).json({
           success: false,
-          message: "resume and careerGoal are required and must be non-empty strings.",
+          message: "careerGoal is required and must be a non-empty string.",
         });
         return;
       }

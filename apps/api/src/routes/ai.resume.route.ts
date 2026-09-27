@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { aiController } from "../controllers/ai.controller.js";
+import { resumeTailorDownloadController } from "../controllers/resume-tailor-download.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router: Router = Router();
@@ -27,6 +28,13 @@ router.post(
   "/tailor",
   authMiddleware,
   aiController.tailorResume.bind(aiController)
+);
+
+// Renders a tailored resume as a real PDF from the structured AI result.
+router.post(
+  "/tailor/download",
+  authMiddleware,
+  resumeTailorDownloadController.download.bind(resumeTailorDownloadController)
 );
 
 router.post(

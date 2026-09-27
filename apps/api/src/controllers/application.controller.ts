@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 
 import { applicationAIService } from "../services/application-ai.service.js";
+import { resolveResumeInput } from "./ai-resume-input.js";
 
 const MAX_INPUT_LENGTH = 50000;
 
@@ -15,12 +16,17 @@ export class ApplicationController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { resume, jobDescription } = req.body;
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      const jobDescription = req.body?.jobDescription;
+
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -47,8 +53,12 @@ export class ApplicationController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
+
       const {
-        resume,
         jobDescription,
         companyName,
         jobTitle,
@@ -56,10 +66,10 @@ export class ApplicationController {
         platform,
       } = req.body;
 
-      if (!requireString(resume) || !requireString(jobDescription)) {
+      if (!requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "resume and jobDescription are required and must be non-empty strings.",
+          message: "jobDescription is required and must be a non-empty string.",
         });
         return;
       }
@@ -91,16 +101,20 @@ export class ApplicationController {
     next: NextFunction
   ): Promise<void> {
     try {
+      const resume = await resolveResumeInput(req, res);
+      if (!resume) {
+        return;
+      }
+
       const {
         question,
-        resume,
         jobDescription,
       } = req.body;
 
-      if (!requireString(question) || !requireString(resume) || !requireString(jobDescription)) {
+      if (!requireString(question) || !requireString(jobDescription)) {
         res.status(400).json({
           success: false,
-          message: "question, resume and jobDescription are required and must be non-empty strings.",
+          message: "question and jobDescription are required and must be non-empty strings.",
         });
         return;
       }

@@ -41,6 +41,33 @@ export class ResumeController {
     }
   }
 
+  /**
+   * The canonical structured resume. This is what the web viewer and every AI
+   * feature read, so there is one shape for a user's resume across the app.
+   */
+  async getResumeDocument(req: Request, res: Response) {
+    try {
+      const primary = await resumeService.getPrimaryResume(req.user.id);
+
+      if (!primary) {
+        return res.status(404).json({
+          success: false,
+          message: "No resume found. Upload your resume to continue.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: primary,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
   async updateResume(req: Request, res: Response) {
     try {
       const data = updateResumeSchema.parse(req.body);
