@@ -735,6 +735,49 @@ describe("POST /api/jobs/match", () => {
     expect(byExperience.body.total).toBe(7);
   });
 
+  it("uses the user's minMatchScore setting as the strong-match cutoff", async () => {
+    await seedUserSkills(["TypeScript", "PostgreSQL"]);
+
+    for (let index = 0; index < 3; index += 1) {
+      await seedMatchingJob({
+        description: `TypeScript and PostgreSQL services ${index}.`,
+        skills: ["typescript", "postgresql"],
+      });
+    }
+    for (let index = 0; index < 4; index += 1) {
+      await seedMatchingJob({
+        description: `TypeScript interfaces ${index}.`,
+        skills: ["typescript"],
+      });
+    }
+
+    // No settings row yet: the built-in cutoff of 70 applies, so the four
+    // jobs scoring 60 are not "strong".
+    const beforeSettings = await request(app)
+      .post("/api/jobs/match")
+      .set(bearer(user.token))
+      .send({});
+
+    expectSuccess(beforeSettings, 200);
+    expect(beforeSettings.body.summary.strongMatches).toBe(3);
+
+    // The row is created on the first save, which is what the Settings page
+    // does when it has never written settings before.
+    await request(app)
+      .post("/users/settings")
+      .set(bearer(user.token))
+      .send({ minMatchScore: 50 })
+      .expect(201);
+
+    const afterSettings = await request(app)
+      .post("/api/jobs/match")
+      .set(bearer(user.token))
+      .send({});
+
+    expectSuccess(afterSettings, 200);
+    expect(afterSettings.body.summary.strongMatches).toBe(7);
+  });
+
   it("isolates matching results per authenticated user", async () => {
     const other = await createUser(app, { name: "Other User" });
     await seedUserSkills(["TypeScript"], user);

@@ -5,6 +5,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 
 import app from "../src/app.js";
+import { notificationService } from "../src/services/notifications.service.js";
 import { bearer, createUser, type TestUser } from "./helpers/auth.js";
 import { disconnectDatabase, prisma, resetDatabase } from "./helpers/db.js";
 import { expectFailure, expectSuccess, expectUnauthorized } from "./helpers/http.js";
@@ -200,5 +201,134 @@ describe("application update alerts", () => {
     expect(
       await prisma.notification.count({ where: { type: "APPLICATION_UPDATE" } })
     ).toBe(0);
+  });
+
+  it("respects the interviewReminders setting for the interview stage only", async () => {
+    const job = await seedJob();
+    await prisma.userSettings.create({
+      data: { userId: user.id, applicationUpdates: true, interviewReminders: false },
+    });
+
+    const created = await request(app)
+      .post("/api/jobs/applications")
+      .set(bearer(user.token))
+      .send({ jobId: job.id, status: "Applied" });
+    expectSuccess(created, 201);
+
+    await request(app)
+      .patch(`/api/jobs/applications/${created.body.data.id}`)
+      .set(bearer(user.token))
+      .send({ status: "Interview" });
+
+    expect(
+      await prisma.notification.count({ where: { type: "APPLICATION_UPDATE" } })
+    ).toBe(0);
+
+    // A non-interview stage is unaffected by the interview toggle.
+    await request(app)
+      .patch(`/api/jobs/applications/${created.body.data.id}`)
+      .set(bearer(user.token))
+      .send({ status: "Offer" });
+
+    expect(
+      await prisma.notification.count({ where: { type: "APPLICATION_UPDATE" } })
+    ).toBe(1);
+  });
+
+  it("respects the emailNotifications master switch", async () => {
+    const job = await seedJob();
+    await prisma.userSettings.create({
+      data: { userId: user.id, applicationUpdates: true, emailNotifications: false },
+    });
+
+    const created = await request(app)
+      .post("/api/jobs/applications")
+      .set(bearer(user.token))
+      .send({ jobId: job.id, status: "Applied" });
+
+    await request(app)
+      .patch(`/api/jobs/applications/${created.body.data.id}`)
+      .set(bearer(user.token))
+      .send({ status: "Interview" });
+
+    expect(
+      await prisma.notification.count({ where: { type: "APPLICATION_UPDATE" } })
+    ).toBe(0);
+  });
+});
+
+describe("new job alerts honour the Settings toggles", () => {
+  const job = {
+    id: "job-alert-target",
+    title: "Backend Engineer",
+    company: "Acme",
+    location: "Remote",
+    workMode: "Remote",
+    jobType: "Full-time",
+    description: "TypeScript and PostgreSQL services.",
+  };
+
+  /**
+   * `notifyNewJobs` walks every user, so each case asserts on the candidate's
+   * own notifications rather than on the returned total, which also counts the
+   * shared `user` fixture.
+   */
+  async function alertsFor(candidate: TestUser) {
+    return prisma.notification.count({ where: { userId: candidate.id } });
+  }
+
+  async function seedAlertingUser(settings: Record<string, unknown>) {
+    const candidate = await createUser(app);
+    await prisma.userSettings.create({ data: { userId: candidate.id, ...settings } });
+
+    return candidate;
+  }
+
+  it("alerts a user who has left every toggle enabled", async () => {
+    const candidate = await seedAlertingUser({
+      emailNotifications: true,
+      jobAlerts: true,
+      autoMatch: true,
+    });
+
+    await notificationService.notifyNewJobs([job]);
+
+    expect(await alertsFor(candidate)).toBe(1);
+  });
+
+  it("skips a user who turned emailNotifications off", async () => {
+    const candidate = await seedAlertingUser({
+      emailNotifications: false,
+      jobAlerts: true,
+      autoMatch: true,
+    });
+
+    await notificationService.notifyNewJobs([job]);
+
+    expect(await alertsFor(candidate)).toBe(0);
+  });
+
+  it("skips a user who turned jobAlerts off", async () => {
+    const candidate = await seedAlertingUser({
+      emailNotifications: true,
+      jobAlerts: false,
+      autoMatch: true,
+    });
+
+    await notificationService.notifyNewJobs([job]);
+
+    expect(await alertsFor(candidate)).toBe(0);
+  });
+
+  it("skips a user who turned AI auto-match off", async () => {
+    const candidate = await seedAlertingUser({
+      emailNotifications: true,
+      jobAlerts: true,
+      autoMatch: false,
+    });
+
+    await notificationService.notifyNewJobs([job]);
+
+    expect(await alertsFor(candidate)).toBe(0);
   });
 });
