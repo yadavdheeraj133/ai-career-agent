@@ -102,7 +102,18 @@ function sameDraft(a: PreferencesDraft, b: PreferencesDraft): boolean {
   );
 }
 
-export default function SettingsClient() {
+/**
+ * `initialSection` is what the retired per-section routes (`/setting/ai` and
+ * friends) pass in. The query parameter stays authoritative so that navigating
+ * between sections from the left nav, and any URL that already carries
+ * `?section=`, behave exactly as they do on `/setting`; the prop is only the
+ * starting point for a URL that has no section of its own to say.
+ */
+export default function SettingsClient({
+  initialSection = DEFAULT_SECTION,
+}: {
+  initialSection?: SettingsSectionId;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { logout } = useAuth();
@@ -110,7 +121,7 @@ export default function SettingsClient() {
   const sectionParam = searchParams.get("section");
   const section: SettingsSectionId = isSettingsSection(sectionParam)
     ? sectionParam
-    : DEFAULT_SECTION;
+    : initialSection;
 
   const [preferences, setPreferences] = useState<PreferencesDraft>(
     DEFAULT_PREFERENCES_DRAFT
