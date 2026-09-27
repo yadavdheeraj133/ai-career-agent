@@ -35,6 +35,17 @@ export const jobCatalogueAuth = (
           "Job catalogue mutation is disabled: WORKER_SECRET or ADMIN_EMAILS must be configured.",
       });
     }
+    // In development/test, require a valid authenticated user with an email.
+    // This prevents accidental unprotected mutations while still allowing
+    // local development and testing without needing secret configuration.
+    const userEmail = req.user?.email?.trim().toLowerCase();
+    if (!userEmail) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Job catalogue mutation requires an authenticated user.",
+      });
+    }
     return next();
   }
 

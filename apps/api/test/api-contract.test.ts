@@ -149,9 +149,9 @@ function call(endpoint: Endpoint) {
   )[endpoint.method]!(endpoint.path);
 }
 
-/** 204 No Content legitimately carries no body and no content type. */
+/** 204 No Content and 302 redirects legitimately carry no JSON body. */
 function isBodyless(status: number): boolean {
-  return status === 204 || status === 304;
+  return status === 204 || status === 304 || status === 302;
 }
 
 let user: TestUser;

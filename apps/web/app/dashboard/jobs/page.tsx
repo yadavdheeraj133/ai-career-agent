@@ -19,7 +19,7 @@ const items = [
       "Review the jobs you have bookmarked and decide which ones to apply for.",
   },
   {
-    href: "/jobs/find",
+    href: "/jobs/saved",
     icon: "▤",
     title: "Job Workspace",
     description:

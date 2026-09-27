@@ -22,7 +22,7 @@ export type AIProviderName = "agent-router" | "mock";
 export const DEFAULT_AGENT_ROUTER_BASE_URL = "https://agentrouter.org/v1";
 
 export const DEFAULT_AGENT_ROUTER_USER_AGENT =
-  "claude-cli/2.0.14 (external, cli)";
+  "AI-Career-Agent/1.0";
 
 export const DEFAULT_AGENT_ROUTER_TIMEOUT_MS = 300_000;
 
