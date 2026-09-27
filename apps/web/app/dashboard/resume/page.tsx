@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+
+import { ResumeViewer } from "@/components/resume-viewer";
+import { usePrimaryResume } from "@/lib/use-primary-resume";
 import "../section/dashboardSection.css";
 
 const items = [
@@ -49,6 +52,8 @@ const items = [
 ];
 
 export default function ResumeSectionPage() {
+  const resume = usePrimaryResume();
+
   return (
     <main className="feature-page dashboard-section-page">
       <div className="section-container">
@@ -62,6 +67,26 @@ export default function ResumeSectionPage() {
             well for every application you send.
           </p>
         </header>
+
+        {/* The saved resume is shown here so it is obvious what every tool
+            below is working from. */}
+        {resume.document ? (
+          <section className="card resume-hub-current">
+            <div className="resume-hub-current-head">
+              <div>
+                <p className="card-label">CURRENT RESUME</p>
+
+                <h2>{resume.document.title}</h2>
+              </div>
+
+              <Link href="/dashboard/resume/view" className="resume-hub-link">
+                Open full view →
+              </Link>
+            </div>
+
+            <ResumeViewer resume={resume.document} variant="compact" showActions={false} />
+          </section>
+        ) : null}
 
         <div className="section-card-grid">
           {items.map((item) => (

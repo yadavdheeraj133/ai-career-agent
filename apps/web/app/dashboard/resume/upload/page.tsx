@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { apiRequest } from "@/lib/api";
+import { invalidatePrimaryResume } from "@/lib/use-primary-resume";
 import type { AtsGateStatus, Resume } from "@/lib/types";
 import "../../section/dashboardSection.css";
 import "./upload.css";
@@ -57,6 +58,9 @@ export default function ResumeUploadPage() {
       });
       setStatus("success");
       setMessage("Resume uploaded and profile data extracted successfully.");
+      // The stored resume just changed, so every surface reading the canonical
+      // document has to pick up the new one rather than a cached copy.
+      invalidatePrimaryResume();
       // A replacement upload clears any previous ATS score; reload gate state.
       await loadGate();
     } catch (caught) {

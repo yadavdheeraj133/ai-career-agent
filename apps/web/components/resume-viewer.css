@@ -1,0 +1,190 @@
+/* Styling for the shared resume viewer. Scoped to `rv-*` classes so it inherits
+   the existing theme tokens and works on light and dark without duplicating
+   either palette. */
+
+.rv {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--foreground);
+}
+
+.rv-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rv-name {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.rv-role {
+  margin: 0;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.rv-contact {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rv-link-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-link {
+  color: var(--primary);
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.rv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.rv-action-link {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.rv-action-link:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.rv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rv-section-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rv-paragraph {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.rv-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-tag-list-tight {
+  margin-top: 6px;
+}
+
+.rv-tag {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.rv-tag-muted {
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+  color: var(--muted);
+}
+
+.rv-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rv-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rv-entry-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.rv-entry-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.83rem;
+}
+
+.rv-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 6px 0 0;
+  padding-left: 18px;
+  line-height: 1.55;
+}
+
+.rv-bullets li::marker {
+  color: var(--primary);
+}
+
+.rv-plain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.55;
+}
+
+.rv-more {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* The compact variant is embedded in other pages, so it drops back a step. */
+.rv-compact {
+  gap: 16px;
+}
+
+.rv-compact .rv-name {
+  font-size: 1.25rem;
+}
+
+.rv-compact .rv-header {
+  padding-bottom: 12px;
+}

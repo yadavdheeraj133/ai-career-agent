@@ -9,40 +9,13 @@
  * users), so `describeAiError` prefers that message over guessing at the cause.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
-import { ApiError, apiRequest } from "./api";
-import { resumeToText } from "./resume-text";
-import type { Resume } from "./types";
+import { describeAiError } from "./ai-error";
+import { apiRequest } from "./api";
+import { usePrimaryResume } from "./use-primary-resume";
 
-/** Statuses the API uses for AI provider/boundary failures. */
-const AI_FAILURE_STATUSES = [500, 502, 503, 504];
-
-export function describeAiError(error: unknown): string {
-  if (error instanceof ApiError) {
-    if (error.status === 401) {
-      return "Your session has expired. Please sign in again.";
-    }
-
-    if (AI_FAILURE_STATUSES.includes(error.status)) {
-      // The server already distinguishes a misconfigured provider, a rejected
-      // credential, a rate limit, a timeout and a truncated answer, and it
-      // sends a message safe to show. Only fall back when there is none.
-      return (
-        error.message ||
-        "The AI service is unavailable right now. Please try again later."
-      );
-    }
-
-    return error.message;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Something went wrong while contacting the AI service.";
-}
+export { describeAiError };
 
 export interface AiAction<T> {
   data: T | null;
@@ -99,46 +72,23 @@ export interface ResumeTextState {
   error: string | null;
 }
 
+/**
+ * The resume text an AI feature page works with.
+ *
+ * It is the canonical text from the stored resume, so pages no longer ask the
+ * user to paste a copy. `setText` is kept because a one-off override is still a
+ * legitimate thing to do: the pages that expose it let the user supply a
+ * different resume without saving it over their primary one.
+ */
 export function useResumeText(): ResumeTextState {
-  const [text, setText] = useState("");
-  const [hasResume, setHasResume] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const resume = usePrimaryResume();
+  const [override, setOverride] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
-
-    (async () => {
-      try {
-        const envelope = await apiRequest<Resume>("/resume");
-
-        if (!active) {
-          return;
-        }
-
-        setText(resumeToText(envelope.data));
-        setHasResume(true);
-      } catch (caught) {
-        if (!active) {
-          return;
-        }
-
-        if (caught instanceof ApiError && caught.status === 404) {
-          setHasResume(false);
-        } else {
-          setError(describeAiError(caught));
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  return { text, setText, hasResume, loading, error };
+  return {
+    text: override ?? resume.text,
+    setText: setOverride,
+    hasResume: resume.hasResume,
+    loading: resume.loading,
+    error: resume.error,
+  };
 }

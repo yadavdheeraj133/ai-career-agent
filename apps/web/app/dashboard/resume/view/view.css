@@ -1,0 +1,82 @@
+/* The canonical resume page: the saved resume, rendered on a document-like
+   canvas, with the actions that act on it. */
+
+.resume-view-page {
+  padding: 40px 42px 60px;
+}
+
+.resume-view-page .resume-view-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.resume-view-page .primary-button,
+.resume-view-page .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 42px;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.resume-view-page .primary-button {
+  border: 0;
+
+  background: var(--primary);
+  color: #fff;
+}
+
+.resume-view-page .secondary-button {
+  border: 1px solid var(--border);
+
+  background: transparent;
+  color: var(--foreground);
+}
+
+.resume-view-page .primary-button:hover,
+.resume-view-page .secondary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(47, 38, 88, 0.1);
+}
+
+.resume-view-page .secondary-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+  transform: none;
+}
+
+/* A lighter surface than the surrounding card so the resume reads as a
+   document rather than more page chrome. */
+.resume-view-page .resume-view-canvas {
+  border: 1px solid var(--border);
+
+  background: var(--card);
+  border-radius: 20px;
+  padding: 32px 34px;
+
+  box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+}
+
+@media (max-width: 640px) {
+  .resume-view-page {
+    padding: 28px 18px 48px;
+  }
+
+  .resume-view-page .resume-view-canvas {
+    padding: 22px 20px;
+  }
+}

@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { ResumePreviewCard } from "@/components/resume-preview-card";
 import { apiRequest, type ApiEnvelope, ApiError } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/format";
+import { usePrimaryResume } from "@/lib/use-primary-resume";
 import type {
   DashboardSummary,
   JobMatch,
   JobMatchSummary,
-  Resume,
   UserPreferences,
 } from "@/lib/types";
 
@@ -47,13 +48,13 @@ async function loadOptional<T>(path: string): Promise<T | null> {
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [resume, setResume] = useState<Resume | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [matches, setMatches] = useState<JobMatch[]>([]);
   const [matchSummary, setMatchSummary] =
     useState<JobMatchSummary>(EMPTY_MATCH_SUMMARY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const resume = usePrimaryResume();
 
   useEffect(() => {
     let cancelled = false;
@@ -63,24 +64,22 @@ export default function DashboardPage() {
       setError(null);
 
       try {
-        const [summaryData, resumeData, preferencesData] = await Promise.all([
+        const [summaryData, preferencesData] = await Promise.all([
           apiRequest<DashboardSummary>("/api/dashboard"),
-          loadOptional<Resume>("/resume"),
           loadOptional<UserPreferences>("/api/preferences"),
         ]);
 
         if (cancelled) return;
 
         setSummary(summaryData.data);
-        setResume(resumeData);
         setPreferences(preferencesData);
 
         // Matching requires a profile signal; without one the API correctly
         // rejects an empty match body, so only query when it can mean something.
+        // The server summary already knows whether a resume exists, so this does
+        // not need to wait on the resume document itself.
         const canMatch =
-          summaryData.data.resume.exists ||
-          (resumeData?.skills?.length ?? 0) > 0 ||
-          preferencesData !== null;
+          summaryData.data.resume.exists || preferencesData !== null;
 
         let matchResponse: ApiEnvelope<JobMatch[]> | null = null;
 
@@ -158,8 +157,8 @@ export default function DashboardPage() {
     );
   }
 
-  const skillsCount = Array.isArray(resume?.skills)
-    ? resume.skills.length
+  const skillsCount = Array.isArray(resume.document?.skills)
+    ? resume.document.skills.length
     : summary.resume.skillsCount;
 
   const totalJobs = matchSummary.totalMatches;
@@ -320,6 +319,10 @@ export default function DashboardPage() {
           </section>
 
           <CareerInsights insights={insights} />
+
+          {resume.document ? (
+            <ResumePreviewCard resume={resume.document} />
+          ) : null}
 
           <CareerRoadmap targetRole={preferences?.jobRole ?? null} />
 

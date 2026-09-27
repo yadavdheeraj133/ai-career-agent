@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { AiEmptyState, AiLoadingState, AiToolPanel } from "@/components/ai-tool-panel";
+import { ResumeViewer } from "@/components/resume-viewer";
+import { API_BASE_URL, getToken } from "@/lib/api";
+import { tailoredToDocument } from "@/lib/resume-document";
 import { useAiAction, useResumeText } from "@/lib/use-ai";
 import type { ResumeTailorResult } from "@/lib/types";
 
@@ -12,6 +15,8 @@ import "./tailor.css";
 export default function ResumeTailorPage() {
   const resume = useResumeText();
   const [jobDescription, setJobDescription] = useState("");
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
   const action = useAiAction<ResumeTailorResult>();
 
   const canRun =
@@ -26,6 +31,53 @@ export default function ResumeTailorPage() {
         ...result.improvementSummary.notes,
       ]
     : [];
+
+  /**
+   * The tailored resume is rendered and downloaded from the same response, so
+   * the PDF is a true export of the preview rather than a second generation.
+   * Nothing is saved over the user's primary resume.
+   */
+  async function downloadTailoredPdf() {
+    if (!result) return;
+
+    setDownloading(true);
+    setDownloadError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/resume/tailor/download`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken() ?? ""}`,
+        },
+        body: JSON.stringify({ tailoredResume: result }),
+      });
+
+      if (!response.ok) {
+        throw new Error("We couldn't build your tailored PDF. Please try again.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+
+      anchor.href = url;
+      anchor.download = `${result.title || "tailored-resume"}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (caught) {
+      setDownloadError(
+        caught instanceof Error
+          ? caught.message
+          : "We couldn't build your tailored PDF. Please try again."
+      );
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <main className="feature-page tailor-page">
@@ -54,7 +106,7 @@ export default function ResumeTailorPage() {
         <AiToolPanel
           eyebrow="RESUME + JOB DESCRIPTION"
           title="Tailor your resume"
-          description="Paste the job you are applying for and AI will rewrite your resume to match it."
+          description="Paste the job you are applying for and AI will rewrite your saved resume to match it."
           fields={[
             {
               id: "resume",
@@ -66,8 +118,8 @@ export default function ResumeTailorPage() {
               hint: resume.loading
                 ? "Loading your saved resume…"
                 : resume.hasResume
-                  ? "Prefilled from your saved resume."
-                  : "Paste your resume to get started.",
+                  ? "Using your saved resume."
+                  : "You don't have a saved resume yet — upload one, or paste it here.",
             },
             {
               id: "jobDescription",
@@ -156,65 +208,6 @@ export default function ResumeTailorPage() {
                 <span className="preview-label">AI GENERATED</span>
               </div>
 
-              <div className="preview-grid">
-                <div className="preview-column">
-                  <span className="preview-column-label">SUMMARY</span>
-
-                  <div className="resume-preview improved">
-                    <h3>{result.title}</h3>
-
-                    <p>{result.summary}</p>
-                  </div>
-                </div>
-
-                <div className="preview-arrow">→</div>
-
-                <div className="preview-column">
-                  <span className="preview-column-label">SKILLS</span>
-
-                  <div className="resume-preview improved">
-                    <div className="ai-tag-list">
-                      {result.skills.map((skill) => (
-                        <span className="ai-tag" key={skill}>
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {result.experience.length > 0 ? (
-                <div className="suggestions-list">
-                  {result.experience.map((item) => (
-                    <article
-                      className="suggestion-item"
-                      key={`${item.company}-${item.position}`}
-                    >
-                      <span className="suggestion-number">•</span>
-
-                      <div>
-                        <h3>
-                          {item.position} — {item.company}
-                        </h3>
-
-                        <p>
-                          {[item.startDate, item.endDate]
-                            .filter(Boolean)
-                            .join(" – ")}
-                        </p>
-
-                        <ul>
-                          {item.responsibilities.map((line) => (
-                            <li key={line}>{line}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : null}
-
               {result.improvementSummary.remainingMissingKeywords.length >
               0 ? (
                 <>
@@ -233,6 +226,41 @@ export default function ResumeTailorPage() {
                   </div>
                 </>
               ) : null}
+
+              {/* Rendered with the same component as the saved resume, so a
+                  tailored version is never formatted differently. */}
+              <div className="card tailor-result-canvas">
+                <ResumeViewer
+                  resume={tailoredToDocument(result)}
+                  showActions={false}
+                />
+              </div>
+
+              {downloadError ? <p className="form-error">{downloadError}</p> : null}
+            </section>
+
+            <section className="tailor-action-card">
+              <div>
+                <p className="card-label">DOWNLOAD</p>
+
+                <h2>Save your tailored resume</h2>
+
+                <p>
+                  Get a clean PDF of exactly what you see above, with your saved
+                  contact details added automatically.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="primary-button"
+                onClick={downloadTailoredPdf}
+                disabled={downloading}
+              >
+                {downloading ? "Building PDF…" : "Download tailored PDF"}
+
+                {downloading ? null : <span>→</span>}
+              </button>
             </section>
           </>
         ) : null}

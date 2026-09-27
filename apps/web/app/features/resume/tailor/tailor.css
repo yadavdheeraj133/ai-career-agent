@@ -185,6 +185,17 @@
   margin-bottom: 16px;
 }
 
+/* The tailored resume, rendered by the shared viewer so it matches the saved
+   resume's formatting and the PDF that gets downloaded. */
+
+.tailor-page .tailor-result-canvas {
+  margin-top: 20px;
+  padding: 26px 28px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+}
+
 .tailor-page .section-header {
   display: flex;
   align-items: center;

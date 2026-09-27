@@ -59,6 +59,47 @@
   gap: 16px;
 }
 
+/* The saved resume, shown above the feature grid so it is obvious what the
+   tools below are working from. */
+
+.dashboard-section-page .resume-hub-current {
+  margin-bottom: 26px;
+  padding: 24px 26px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+}
+
+.dashboard-section-page .resume-hub-current-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-section-page .resume-hub-current-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-section-page .resume-hub-link {
+  flex-shrink: 0;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.dashboard-section-page .resume-hub-link:hover {
+  text-decoration: underline;
+}
+
 .dashboard-section-page .section-link-card {
   display: flex;
   align-items: flex-start;

@@ -1,0 +1,109 @@
+/* Dashboard resume summary card. Follows the per-component CSS convention used
+   by the other dashboard cards. */
+
+.resume-preview {
+  border: 1px solid var(--border);
+  background: var(--card);
+
+  border-radius: 20px;
+  padding: 24px 26px;
+
+  box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+}
+
+.resume-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.resume-preview-head h2 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+}
+
+.resume-preview-badge {
+  flex-shrink: 0;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background: rgba(112, 87, 232, 0.1);
+  color: var(--primary);
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.resume-preview-role {
+  margin: 8px 0 0;
+
+  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.resume-preview-contact {
+  margin: 5px 0 0;
+
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.resume-preview-headline {
+  margin: 10px 0 0;
+
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.resume-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.resume-preview-actions .primary-button,
+.resume-preview-actions .resume-preview-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 40px;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.resume-preview-actions .primary-button {
+  border: 0;
+
+  background: var(--primary);
+  color: #fff;
+}
+
+.resume-preview-actions .resume-preview-secondary {
+  border: 1px solid var(--border);
+
+  background: transparent;
+  color: var(--foreground);
+}
+
+.resume-preview-actions .primary-button:hover,
+.resume-preview-actions .resume-preview-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(47, 38, 88, 0.08);
+}
