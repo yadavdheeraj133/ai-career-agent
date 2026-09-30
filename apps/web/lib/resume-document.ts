@@ -46,6 +46,20 @@ export interface ResumeAchievement {
   description: string;
 }
 
+/** The sections a document can carry, in their default rendering order. */
+export const RESUME_SECTION_KEYS = [
+  "summary",
+  "skills",
+  "experience",
+  "education",
+  "projects",
+  "certifications",
+  "achievements",
+  "languages",
+] as const;
+
+export type ResumeSectionKey = (typeof RESUME_SECTION_KEYS)[number];
+
 export interface ResumeDocument {
   title: string;
   name: string | null;
@@ -64,6 +78,45 @@ export interface ResumeDocument {
   certifications: ResumeCertification[];
   achievements: ResumeAchievement[];
   languages: string[];
+  /**
+   * Order the sections appear in the source document, so an uploaded resume is
+   * shown the way the candidate wrote it. Missing on documents that never
+   * recorded one — the viewer then falls back to `RESUME_SECTION_KEYS`.
+   */
+  sectionOrder?: ResumeSectionKey[];
+}
+
+function isSectionKey(value: unknown): value is ResumeSectionKey {
+  return (
+    typeof value === "string" &&
+    (RESUME_SECTION_KEYS as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * Section keys in the order to render them: whatever the document recorded
+ * first (unknown or repeated entries dropped), then everything it left out in
+ * the default order. Callers never handle a partial list.
+ */
+export function orderedSectionKeys(
+  sectionOrder?: ResumeSectionKey[]
+): ResumeSectionKey[] {
+  const ordered: ResumeSectionKey[] = [];
+  const seen = new Set<ResumeSectionKey>();
+
+  for (const key of sectionOrder ?? []) {
+    if (!isSectionKey(key) || seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(key);
+  }
+
+  for (const key of RESUME_SECTION_KEYS) {
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(key);
+  }
+
+  return ordered;
 }
 
 export interface ResumeMeta {

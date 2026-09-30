@@ -79,6 +79,24 @@ export class NotificationController {
       next(error);
     }
   }
+
+  async deleteAll(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const data = await notificationService.deleteAll(req.user.id);
+
+      res.status(200).json({
+        success: true,
+        message: "All notifications deleted.",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const notificationController = new NotificationController();

@@ -62,6 +62,53 @@ export interface ResumeAchievement {
   description: string;
 }
 
+/** The sections a document can carry, in their default rendering order. */
+export const RESUME_SECTION_KEYS = [
+  "summary",
+  "skills",
+  "experience",
+  "education",
+  "projects",
+  "certifications",
+  "achievements",
+  "languages",
+] as const;
+
+export type ResumeSectionKey = (typeof RESUME_SECTION_KEYS)[number];
+
+export function isResumeSectionKey(value: unknown): value is ResumeSectionKey {
+  return (
+    typeof value === "string" &&
+    (RESUME_SECTION_KEYS as readonly string[]).includes(value)
+  );
+}
+
+/**
+ * The order sections should be rendered in: the recorded source order first,
+ * then any section it did not mention in the default order. Callers therefore
+ * never have to handle a partial or missing list.
+ */
+export function orderedSectionKeys(
+  sectionOrder?: ResumeSectionKey[]
+): ResumeSectionKey[] {
+  const ordered: ResumeSectionKey[] = [];
+  const seen = new Set<ResumeSectionKey>();
+
+  for (const key of sectionOrder ?? []) {
+    if (!isResumeSectionKey(key) || seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(key);
+  }
+
+  for (const key of RESUME_SECTION_KEYS) {
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ordered.push(key);
+  }
+
+  return ordered;
+}
+
 export interface ResumeDocument extends ResumeContact {
   title: string;
   filename: string | null;
@@ -73,6 +120,13 @@ export interface ResumeDocument extends ResumeContact {
   certifications: ResumeCertification[];
   achievements: ResumeAchievement[];
   languages: string[];
+  /**
+   * Order the sections appeared in the source document, so an uploaded resume
+   * is displayed the way the candidate wrote it instead of a fixed order.
+   * Absent for resumes that never recorded one; readers fall back to
+   * `RESUME_SECTION_KEYS`.
+   */
+  sectionOrder?: ResumeSectionKey[];
 }
 
 export const EMPTY_RESUME_DOCUMENT: ResumeDocument = {
@@ -586,6 +640,20 @@ function inferName(rawText: string, fallback: string): string | null {
 }
 
 /**
+ * The section order recorded at upload time, if the profile carries one.
+ * Rows written before order was captured simply have no key.
+ */
+function readSectionOrder(
+  profile: Dict | null
+): { sectionOrder?: ResumeSectionKey[] } {
+  const raw = parsedProfileValue(profile, "sectionOrder");
+  if (!Array.isArray(raw)) return {};
+
+  const order = raw.filter(isResumeSectionKey);
+  return order.length > 0 ? { sectionOrder: order } : {};
+}
+
+/**
  * Projects any stored resume row onto the canonical document shape.
  * Explicit structured columns win; the flat `parsedProfile` and `rawText`
  * headers only fill in contact details the structured sections do not carry.
@@ -629,6 +697,7 @@ return {
       certifications,
       achievements,
       languages: uniqueStrings(row.languages ?? languagesFromRaw, 20),
+      ...readSectionOrder(profile),
     };
 }
 

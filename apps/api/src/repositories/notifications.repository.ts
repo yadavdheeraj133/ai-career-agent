@@ -51,6 +51,14 @@ export class NotificationRepository {
     return result.count;
   }
 
+  /** Permanently removes every notification belonging to this user only. */
+  async deleteAllForUser(userId: string) {
+    const result = await prisma.notification.deleteMany({
+      where: { userId },
+    });
+    return result.count;
+  }
+
   /** Users who bookmarked a job — used for saved-job change alerts. */
   async findBookmarkerIds(jobId: string) {
     const bookmarks = await prisma.bookmark.findMany({

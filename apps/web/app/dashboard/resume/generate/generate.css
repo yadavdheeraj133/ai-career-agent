@@ -1,0 +1,161 @@
+/* Non-tailored generation: the action that picks a template, and the preview it
+   produces. Buttons mirror the resume view page so the two feel like one flow. */
+
+.resume-generate-page .resume-generate-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.resume-generate-page .primary-button,
+.resume-generate-page .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  width: auto;
+  min-height: 42px;
+
+  margin-top: 0;
+  padding: 0 16px;
+
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 750;
+  text-decoration: none;
+
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.resume-generate-page .primary-button {
+  border: 0;
+  background: var(--primary);
+  color: #fff;
+}
+
+.resume-generate-page .secondary-button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+}
+
+.resume-generate-page .primary-button:hover:not(:disabled),
+.resume-generate-page .secondary-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(47, 38, 88, 0.1);
+}
+
+.resume-generate-page .primary-button:disabled,
+.resume-generate-page .secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+.resume-generate-page .resume-generate-empty,
+.resume-generate-page .resume-generate-action {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  max-width: 760px;
+  margin-bottom: 26px;
+  padding: 24px 26px;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+}
+
+.resume-generate-page .resume-generate-action {
+  gap: 18px;
+}
+
+.resume-generate-page .resume-generate-action > div:first-child h2,
+.resume-generate-page .resume-generate-empty h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 820;
+  letter-spacing: -0.02em;
+}
+
+.resume-generate-page .resume-generate-action p,
+.resume-generate-page .resume-generate-empty > p:last-of-type {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.resume-generate-page .resume-generate-buttons {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.resume-generate-page .resume-generate-empty .primary-button {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.resume-generate-page .resume-generate-result {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+  margin-bottom: 26px;
+}
+
+.resume-generate-page .resume-generate-result-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.resume-generate-page .resume-generate-badge {
+  padding: 5px 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.04em;
+}
+
+.resume-generate-page .resume-generate-canvas {
+  padding: 32px 34px;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--card);
+
+  box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+}
+
+.resume-generate-page .resume-generate-note {
+  margin: 0;
+
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .resume-generate-page .resume-generate-canvas {
+    padding: 22px 20px;
+  }
+}

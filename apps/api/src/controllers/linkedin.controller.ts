@@ -76,8 +76,11 @@ export const linkedinCallback = async (req: Request, res: Response) => {
 
     // Fragments are processed by the browser and are not sent in the HTTP
     // request, which keeps the application token out of server access logs.
+    // `new=1` tells the frontend this authentication created the account,
+    // so it can start on Skills onboarding instead of the dashboard.
+    const onboarding = result.isNewUser ? "&new=1" : "";
     return res.redirect(
-      `${frontendUrl}/auth/linkedin/callback#token=${encodeURIComponent(result.token)}`
+      `${frontendUrl}/auth/linkedin/callback#token=${encodeURIComponent(result.token)}${onboarding}`
     );
   } catch (error) {
     const message =

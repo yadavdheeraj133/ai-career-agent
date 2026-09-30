@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { apiRequest } from "@/lib/api";
@@ -15,23 +14,17 @@ import {
   startThemeSync,
   type Theme,
 } from "@/lib/theme";
-import type { AppNotification, Job } from "@/lib/types";
+import type { AppNotification } from "@/lib/types";
 
 export default function Header() {
   const router = useRouter();
+  const { user } = useAuth();
   const [theme, setTheme] = useState<Theme>("light");
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState<string | null>(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<Job[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const { user } = useAuth();
-
   const displayName = user?.name?.trim() || "there";
   const firstName = displayName.split(/\s+/)[0];
 
@@ -40,9 +33,6 @@ export default function Header() {
     return startThemeSync((current) => setTheme(current));
   }, []);
 
-  // The header shows whether the workspace is dark right now, so it tracks the
-  // resolved theme rather than the stored preference: with "system" selected
-  // the button still has to describe what is on screen.
   const darkMode = resolveTheme(theme) === "dark";
 
   const toggleTheme = () => {
@@ -51,34 +41,6 @@ export default function Header() {
       applyTheme(target);
       return target;
     });
-  };
-
-  const runSearch = async () => {
-    const keyword = search.trim();
-    if (!keyword) {
-      setSearchResults([]);
-      setSearchError(null);
-      return;
-    }
-
-    setSearchLoading(true);
-    setSearchError(null);
-
-    try {
-      const response = await apiRequest<Job[] | { data: Job[] }>(
-        `/api/jobs/search?keyword=${encodeURIComponent(keyword)}`
-      );
-      setSearchResults(
-        Array.isArray(response.data) ? response.data : response.data.data
-      );
-    } catch (caught) {
-      setSearchError(
-        caught instanceof Error ? caught.message : "Unable to search jobs."
-      );
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
   };
 
   const loadNotifications = useCallback(async () => {
@@ -145,12 +107,28 @@ export default function Header() {
     }
   };
 
+  const deleteAll = async () => {
+    setNotifications([]);
+    setUnread(0);
+    setNotificationsError(null);
+
+    try {
+      await apiRequest("/api/notifications", { method: "DELETE" });
+    } catch (caught) {
+      // The delete failed, so restore the real server state.
+      setNotificationsError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to delete notifications."
+      );
+      void loadNotifications();
+    }
+  };
+
   return (
     <header className="dashboard-header">
       <div className="dashboard-header-left">
-        <p className="dashboard-eyebrow">
-          CAREER COMMAND CENTER
-        </p>
+       
 
         <h1>Good morning, {firstName} </h1>
 
@@ -164,53 +142,11 @@ export default function Header() {
           type="button"
           className="header-search-button"
           aria-label="Search jobs"
-          onClick={() => setSearchOpen((prev) => !prev)}
+          onClick={() => router.push("/jobs/find")}
         >
           <span>⌕</span>
           <span>Search jobs...</span>
         </button>
-        {searchOpen && (
-          <div className="header-search-panel">
-            <form
-              className="header-search-form"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void runSearch();
-              }}
-            >
-              <input
-                autoFocus
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search jobs..."
-                aria-label="Search jobs"
-              />
-              <button type="submit" aria-label="Run search">⌕</button>
-            </form>
-
-            <div className="header-search-results">
-              {searchLoading ? (
-                <p className="header-notification-empty">Searching…</p>
-              ) : searchError ? (
-                <p className="header-search-error">{searchError}</p>
-              ) : search.trim() && searchResults.length === 0 ? (
-                <p className="header-notification-empty">No jobs found.</p>
-              ) : (
-                searchResults.map((job) => (
-                  <Link
-                    key={job.id}
-                    href={`/jobs/${job.id}`}
-                    className="header-search-result"
-                    onClick={() => setSearchOpen(false)}
-                  >
-                    <strong>{job.title}</strong>
-                    <span>{job.company} · {job.location}</span>
-                  </Link>
-                ))
-              )}
-            </div>
-          </div>
-        )}
 
         <div className="header-notification">
           <button
@@ -228,11 +164,16 @@ export default function Header() {
             <div className="header-notification-panel">
               <div className="header-notification-head">
                 <strong>Notifications</strong>
-                {unread > 0 && (
-                  <button type="button" onClick={markAllRead}>
-                    Mark all read
+                <div className="header-notification-actions">
+                  {unread > 0 && (
+                    <button type="button" onClick={markAllRead}>
+                      Mark all read
+                    </button>
+                  )}
+                  <button type="button" onClick={deleteAll}>
+                    Delete All
                   </button>
-                )}
+                </div>
               </div>
 
               <div className="header-notification-list">

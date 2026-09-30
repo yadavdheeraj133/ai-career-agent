@@ -7,6 +7,8 @@ const router: Router = Router();
 
 router.get("/", authMiddleware, notificationController.list);
 
+router.delete("/", authMiddleware, notificationController.deleteAll);
+
 router.post(
   "/read-all",
   authMiddleware,

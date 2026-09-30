@@ -108,6 +108,27 @@
   text-decoration: underline;
 }
 
+/* The landing card is a state summary, so it drops the divider the full
+   block used to carry, and the open action is a button rather than a link. */
+.dashboard-section-page .resume-hub-current.is-compact .resume-hub-current-head {
+  align-items: center;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.dashboard-section-page .resume-hub-open {
+  width: auto;
+  min-height: 40px;
+
+  flex-shrink: 0;
+
+  margin-top: 0;
+  padding: 0 18px;
+
+  font-size: 12px;
+}
+
 .dashboard-section-page .section-link-card {
   display: flex;
   align-items: flex-start;

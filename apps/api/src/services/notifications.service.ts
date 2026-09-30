@@ -137,6 +137,11 @@ export class NotificationService {
     return { updated };
   }
 
+  async deleteAll(userId: string) {
+    const deleted = await notificationRepository.deleteAllForUser(userId);
+    return { deleted };
+  }
+
   async create(input: CreateNotificationInput) {
     return notificationRepository.create({
       user: { connect: { id: input.userId } },

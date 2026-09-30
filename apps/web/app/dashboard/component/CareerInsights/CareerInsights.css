@@ -1,7 +1,28 @@
 .career-insights {
   width: 100%;
 
+  min-width: 0;
+
   margin-bottom: 30px;
+
+  padding: 24px;
+
+  border: 1px solid rgba(112, 87, 232, 0.1);
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(246, 243, 255, 0.94)
+    );
+
+  box-shadow:
+    0 18px 45px rgba(47, 38, 88, 0.055);
+}
+
+.career-insights .section-heading {
+  margin-bottom: 18px;
 }
 
 .section-heading {
@@ -54,9 +75,9 @@
 .insights-grid {
   display: grid;
 
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 14px;
+  gap: 16px;
 }
 
 .insight-card {
@@ -82,6 +103,13 @@
 
   box-shadow:
     0 17px 35px rgba(47, 38, 88, 0.065);
+}
+
+.career-insights .insight-card {
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
 }
 
 .insight-top {
@@ -168,6 +196,12 @@
   transition: transform 0.2s ease;
 }
 
+.career-insights .insight-action {
+  margin-top: auto;
+
+  padding-top: 16px;
+}
+
 .insight-action:hover span {
   transform: translateX(3px);
 }
@@ -183,6 +217,10 @@
 }
 
 @media (max-width: 480px) {
+  .career-insights {
+    padding: 16px;
+  }
+
   .section-heading {
     align-items: flex-start;
   }
@@ -199,6 +237,15 @@
 /* ================================
     DARK MODE
    ================================ */
+
+html[data-theme="dark"] .career-insights {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 30, 54, 0.98),
+    rgba(25, 22, 44, 0.94)
+  );
+  border-color: rgba(112, 87, 232, 0.15);
+}
 
 html[data-theme="dark"] .insight-card {
   background: rgba(34, 30, 54, 0.9);

@@ -142,6 +142,50 @@ describe("POST /api/notifications/read-all", () => {
   });
 });
 
+describe("DELETE /api/notifications", () => {
+  it("requires authentication", async () => {
+    const res = await request(app).delete("/api/notifications");
+    expectUnauthorized(res);
+  });
+
+  it("deletes every notification of the current user only", async () => {
+    const other = await createUser(app);
+    await seedNotification();
+    await seedNotification({ readAt: new Date() });
+    await seedNotification({ userId: other.id });
+
+    const res = await request(app)
+      .delete("/api/notifications")
+      .set(bearer(user.token));
+
+    expectSuccess(res);
+    expect(res.body.data.deleted).toBe(2);
+    expect(
+      await prisma.notification.count({ where: { userId: user.id } })
+    ).toBe(0);
+    expect(
+      await prisma.notification.count({ where: { userId: other.id } })
+    ).toBe(1);
+  });
+
+  it("keeps the notifications deleted for subsequent requests", async () => {
+    await seedNotification();
+
+    await request(app)
+      .delete("/api/notifications")
+      .set(bearer(user.token))
+      .expect(200);
+
+    const res = await request(app)
+      .get("/api/notifications")
+      .set(bearer(user.token));
+
+    expectSuccess(res);
+    expect(res.body.count).toBe(0);
+    expect(res.body.unread).toBe(0);
+  });
+});
+
 describe("application update alerts", () => {
   async function seedJob() {
     return prisma.job.create({

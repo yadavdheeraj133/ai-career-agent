@@ -72,6 +72,10 @@ const ENDPOINTS: Endpoint[] = [
   E("get", "/resume/ats-status", "resume-upload"),
   E("post", "/resume/ats-check", "resume-upload", { consumesBody: true }),
 
+  // ---- resume (non-tailored template generation) -------------------------
+  E("post", "/resume/generate", "resume-generate"),
+  E("post", "/resume/generate/download", "resume-generate"),
+
   // ---- job catalogue CRUD ----------------------------------------------
   E("post", "/jobs", "jobs", { consumesBody: true }),
   E("get", "/jobs", "jobs"),
@@ -132,6 +136,7 @@ const ENDPOINTS: Endpoint[] = [
   // ---- dashboard / notifications / skills -------------------------------
   E("get", "/api/dashboard", "dashboard"),
   E("get", "/api/notifications", "notifications"),
+  E("delete", "/api/notifications", "notifications"),
   E("post", "/api/notifications/read-all", "notifications"),
   E("patch", "/api/notifications/some-id/read", "notifications"),
   E("get", "/api/skills", "skills"),
@@ -166,10 +171,10 @@ afterAll(async () => {
 });
 
 describe("endpoint inventory", () => {
-  it("covers all 63 routes in the routers", () => {
+  it("covers all 66 routes in the routers", () => {
     // Guards the inventory itself: adding or removing a route has to be
     // reconciled here rather than silently drifting.
-    expect(ENDPOINTS).toHaveLength(63);
+    expect(ENDPOINTS).toHaveLength(66);
   });
 
   it("has no duplicate method + path entries", () => {

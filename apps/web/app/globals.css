@@ -154,6 +154,18 @@ button {
     0 8px 20px rgba(112, 87, 232, 0.25);
 }
 
+/* The brand mark image fills the existing mark slot without distortion. */
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  border-radius: inherit;
+}
+
 /* ================================
    AUTH HEADER
 ================================ */

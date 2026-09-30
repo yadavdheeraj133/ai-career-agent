@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 const navigationItems = [
@@ -44,7 +45,9 @@ export default function Sidebar() {
   return (
     <aside className="dashboard-sidebar">
       <Link href="/dashboard" className="sidebar-brand">
-        <span className="sidebar-brand-mark">AI</span>
+        <span className="sidebar-brand-mark">
+          <Image src="/logo.png" alt="AI Career Agent" width={36} height={36} />
+        </span>
 
         <span className="sidebar-brand-text">
           Career Agent

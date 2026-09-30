@@ -7,7 +7,13 @@
  * wrapping and page breaks, not an HTML or text dump renamed to `.pdf`.
  */
 
-import type { ResumeDocument } from "./resume-document.service.js";
+import type { ResumeDocument, ResumeSectionKey } from "./resume-document.service.js";
+import { orderedSectionKeys } from "./resume-document.service.js";
+import {
+  DEFAULT_TEMPLATE_STYLE,
+  type ResumeTemplate,
+  type ResumeTemplateStyle,
+} from "./resume-template.service.js";
 
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
@@ -138,6 +144,18 @@ interface Line {
   /** Space below the line, used after headings. */
   gapAfter?: number;
   rule?: boolean;
+  /** Rule drawn after the line instead of before it. */
+  underline?: boolean;
+  /** Text fill colour; omitted lines stay black, as they always have. */
+  color?: [number, number, number];
+  /** Horizontal alignment inside the text column; defaults to left. */
+  align?: "left" | "center";
+}
+
+const DEFAULT_RULE_COLOR: [number, number, number] = [0.78, 0.8, 0.84];
+
+function colorCode([red, green, blue]: [number, number, number]): string {
+  return `${red} ${green} ${blue}`;
 }
 
 class PageBuilder {
@@ -156,6 +174,11 @@ class PageBuilder {
     this.y = PAGE_HEIGHT - MARGIN;
   }
 
+  /** A horizontal hairline across the text column. */
+  private hairline(color: [number, number, number] = DEFAULT_RULE_COLOR): string {
+    return `${colorCode(color)} RG 0.7 w ${MARGIN} ${this.y.toFixed(2)} m ${(PAGE_WIDTH - MARGIN).toFixed(2)} ${this.y.toFixed(2)} l S`;
+  }
+
   add(line: Line): void {
     const indent = line.indent ?? 0;
     const width = CONTENT_WIDTH - indent;
@@ -163,22 +186,42 @@ class PageBuilder {
     const leading = line.size * 1.32;
     const gapAfter = line.gapAfter ?? 0;
 
-    this.ensure(leading * wrapped.length + gapAfter + (line.rule ? 6 : 0));
+    this.ensure(
+      leading * wrapped.length +
+        gapAfter +
+        (line.rule ? 6 : 0) +
+        (line.underline ? 7 : 0)
+    );
 
     if (line.rule) {
       this.y -= 2;
-      this.current.push(
-        `0.78 0.8 0.84 RG 0.7 w ${MARGIN} ${this.y.toFixed(2)} m ${(PAGE_WIDTH - MARGIN).toFixed(2)} ${this.y.toFixed(2)} l S`
-      );
+      this.current.push(this.hairline());
       this.y -= 6;
     }
 
+    // Colour is only ever emitted for a line that asked for it, so the default
+    // document keeps producing the exact stream it always did.
+    const paintOn = line.color ? `${colorCode(line.color)} rg ` : "";
+    const paintOff = line.color ? " 0 0 0 rg" : "";
+
     for (const text of wrapped) {
       this.y -= leading;
-      const x = MARGIN + indent;
+
+      const lineWidth = measure(text, line.font, line.size);
+      const x =
+        line.align === "center"
+          ? MARGIN + indent + Math.max(0, (width - lineWidth) / 2)
+          : MARGIN + indent;
+
       this.current.push(
-        `BT /${line.font === "bold" ? "F2" : "F1"} ${line.size} Tf 1 0 0 1 ${x.toFixed(2)} ${this.y.toFixed(2)} Tm (${escape(text)}) Tj ET`
+        `${paintOn}BT /${line.font === "bold" ? "F2" : "F1"} ${line.size} Tf 1 0 0 1 ${x.toFixed(2)} ${this.y.toFixed(2)} Tm (${escape(text)}) Tj ET${paintOff}`
       );
+    }
+
+    if (line.underline && wrapped.length > 0) {
+      this.y -= 3;
+      this.current.push(this.hairline(line.color ?? DEFAULT_RULE_COLOR));
+      this.y -= 4;
     }
 
     this.y -= gapAfter;
@@ -196,116 +239,218 @@ function joinRange(start: string, end: string, currentlyWorking: boolean): strin
   return start || to || "";
 }
 
-function sectionHeading(builder: PageBuilder, label: string): void {
-  builder.add({ text: label.toUpperCase(), font: "bold", size: 10.5, gapAfter: 3, rule: true });
+function sectionHeading(builder: PageBuilder, label: string, style: ResumeTemplateStyle): void {
+  const color = style.headingColor ?? undefined;
+  const base = { text: label.toUpperCase(), font: "bold" as const, size: 10.5, gapAfter: 3, color };
+
+  if (style.heading === "plain") {
+    builder.add(base);
+    return;
+  }
+
+  if (style.heading === "underline") {
+    builder.add({ ...base, underline: true });
+    return;
+  }
+
+  builder.add({ ...base, rule: true });
 }
 
-export function renderResumePdf(document: ResumeDocument, fallbackTitle = "Resume"): Buffer {
+/** Entry titles: one line, or the role stacked above the company. */
+function entryHeading(
+  builder: PageBuilder,
+  primary: string,
+  secondary: string,
+  style: ResumeTemplateStyle
+): void {
+  if (!primary && !secondary) return;
+
+  if (style.entry === "stacked" && primary && secondary && primary !== secondary) {
+    builder.add({ text: primary, font: "bold", size: 10.5, gapAfter: 1 });
+    builder.add({ text: secondary, font: "regular", size: 10, gapAfter: 1 });
+    return;
+  }
+
+  builder.add({
+    text: [primary, secondary].filter(Boolean).join(style.separator),
+    font: "bold",
+    size: 10.5,
+    gapAfter: 1,
+  });
+}
+
+/**
+ * Renders a resume document to a real PDF.
+ *
+ * `template` only changes presentation — section order, heading treatment and
+ * typographic detail. It is optional, so the tailored-resume download keeps
+ * exactly the layout it has always had.
+ */
+export function renderResumePdf(
+  document: ResumeDocument,
+  fallbackTitle = "Resume",
+  template?: ResumeTemplate
+): Buffer {
+  const style = template?.style ?? DEFAULT_TEMPLATE_STYLE;
+  const align = style.nameAlign;
   const builder = new PageBuilder();
   const name = document.name || document.title || fallbackTitle;
 
-  builder.add({ text: name, font: "bold", size: 19, gapAfter: 2 });
+  builder.add({ text: name, font: "bold", size: style.nameSize, gapAfter: 2, align });
 
   if (document.currentRole) {
-    builder.add({ text: document.currentRole, font: "regular", size: 10.5, gapAfter: 2 });
+    builder.add({ text: document.currentRole, font: "regular", size: 10.5, gapAfter: 2, align });
   }
 
-  const contact = [document.email, document.phone, document.location].filter(Boolean).join("  |  ");
-  if (contact) builder.add({ text: contact, font: "regular", size: 9.5, gapAfter: 1 });
+  const contact = [document.email, document.phone, document.location]
+    .filter(Boolean)
+    .join(style.separator);
+  if (contact) builder.add({ text: contact, font: "regular", size: 9.5, gapAfter: 1, align });
 
   if (document.links.length) {
-    builder.add({ text: document.links.join("  |  "), font: "regular", size: 9.5, gapAfter: 4 });
+    builder.add({
+      text: document.links.join(style.separator),
+      font: "regular",
+      size: 9.5,
+      gapAfter: 4,
+      align,
+    });
   }
 
-  if (document.summary) {
-    sectionHeading(builder, "Summary");
-    builder.add({ text: document.summary, font: "regular", size: 10, gapAfter: 3 });
-  }
+  const order = orderedSectionKeys(template?.sectionOrder ?? document.sectionOrder);
 
-  if (document.skills.length) {
-    sectionHeading(builder, "Skills");
-    builder.add({ text: document.skills.join(", "), font: "regular", size: 10, gapAfter: 3 });
-  }
+  for (const key of order) {
+    if (!SECTION_HAS_CONTENT[key](document)) continue;
 
-  if (document.experience.length) {
-    sectionHeading(builder, "Experience");
-
-    for (const entry of document.experience) {
-      const heading = [entry.position, entry.company].filter(Boolean).join("  |  ");
-      const meta = [joinRange(entry.startDate, entry.endDate, entry.currentlyWorking), entry.location]
-        .filter(Boolean)
-        .join("  |  ");
-
-      if (heading) builder.add({ text: heading, font: "bold", size: 10.5, gapAfter: 1 });
-      if (meta) builder.add({ text: meta, font: "regular", size: 9.5, gapAfter: 1 });
-
-      for (const responsibility of entry.responsibilities) {
-        builder.add({ text: `\u2022 ${responsibility}`, font: "regular", size: 10, indent: 10 });
-      }
-
-      builder.add({ text: "", font: "regular", size: 5 });
-    }
-  }
-
-  if (document.education.length) {
-    sectionHeading(builder, "Education");
-
-    for (const entry of document.education) {
-      const heading = [entry.degree, entry.institution].filter(Boolean).join("  |  ");
-      const meta = [entry.fieldOfStudy, entry.endDate || entry.startDate, entry.grade]
-        .filter(Boolean)
-        .join("  |  ");
-
-      if (heading) builder.add({ text: heading, font: "bold", size: 10.5, gapAfter: 1 });
-      if (meta) builder.add({ text: meta, font: "regular", size: 9.5 });
-      builder.add({ text: "", font: "regular", size: 5 });
-    }
-  }
-
-  if (document.projects.length) {
-    sectionHeading(builder, "Projects");
-
-    for (const entry of document.projects) {
-      if (entry.name) builder.add({ text: entry.name, font: "bold", size: 10.5, gapAfter: 1 });
-      if (entry.description) builder.add({ text: entry.description, font: "regular", size: 10, gapAfter: 1 });
-      if (entry.technologies.length) {
-        builder.add({ text: `Technologies: ${entry.technologies.join(", ")}`, font: "regular", size: 9.5, gapAfter: 1 });
-      }
-      for (const link of entry.links) {
-        builder.add({ text: link, font: "regular", size: 9.5, indent: 10 });
-      }
-      builder.add({ text: "", font: "regular", size: 5 });
-    }
-  }
-
-  if (document.certifications.length) {
-    sectionHeading(builder, "Certifications");
-
-    for (const entry of document.certifications) {
-      const heading = [entry.name, entry.issuer].filter(Boolean).join("  |  ");
-      const meta = [entry.issueDate, entry.credentialId, entry.credentialUrl].filter(Boolean).join("  |  ");
-
-      if (heading) builder.add({ text: heading, font: "bold", size: 10, gapAfter: 1 });
-      if (meta) builder.add({ text: meta, font: "regular", size: 9.5 });
-    }
-  }
-
-  if (document.achievements.length) {
-    sectionHeading(builder, "Achievements");
-
-    for (const entry of document.achievements) {
-      builder.add({ text: entry.title, font: "bold", size: 10, gapAfter: 1 });
-      if (entry.description) builder.add({ text: entry.description, font: "regular", size: 10 });
-    }
-  }
-
-  if (document.languages.length) {
-    sectionHeading(builder, "Languages");
-    builder.add({ text: document.languages.join(", "), font: "regular", size: 10 });
+    sectionHeading(builder, SECTION_LABELS[key], style);
+    SECTION_RENDERERS[key](builder, document, style);
   }
 
   return buildPdf(builder.finish());
 }
+
+function renderSummary(builder: PageBuilder, document: ResumeDocument): void {
+  builder.add({ text: document.summary, font: "regular", size: 10, gapAfter: 3 });
+}
+
+function renderSkills(builder: PageBuilder, document: ResumeDocument): void {
+  builder.add({ text: document.skills.join(", "), font: "regular", size: 10, gapAfter: 3 });
+}
+
+function renderExperience(
+  builder: PageBuilder,
+  document: ResumeDocument,
+  style: ResumeTemplateStyle
+): void {
+  for (const entry of document.experience) {
+    entryHeading(builder, entry.position, entry.company, style);
+
+    const meta = [joinRange(entry.startDate, entry.endDate, entry.currentlyWorking), entry.location]
+      .filter(Boolean)
+      .join(style.separator);
+
+    if (meta) builder.add({ text: meta, font: "regular", size: 9.5, gapAfter: 1 });
+
+    for (const responsibility of entry.responsibilities) {
+      builder.add({
+        text: `${style.bullet} ${responsibility}`,
+        font: "regular",
+        size: 10,
+        indent: 10,
+      });
+    }
+
+    builder.add({ text: "", font: "regular", size: 5 });
+  }
+}
+
+function renderEducation(
+  builder: PageBuilder,
+  document: ResumeDocument,
+  style: ResumeTemplateStyle
+): void {
+  for (const entry of document.education) {
+    entryHeading(builder, entry.degree, entry.institution, style);
+
+    const meta = [entry.fieldOfStudy, entry.endDate || entry.startDate, entry.grade]
+      .filter(Boolean)
+      .join(style.separator);
+
+    if (meta) builder.add({ text: meta, font: "regular", size: 9.5 });
+    builder.add({ text: "", font: "regular", size: 5 });
+  }
+}
+
+function renderProjects(builder: PageBuilder, document: ResumeDocument): void {
+  for (const entry of document.projects) {
+    if (entry.name) builder.add({ text: entry.name, font: "bold", size: 10.5, gapAfter: 1 });
+    if (entry.description) builder.add({ text: entry.description, font: "regular", size: 10, gapAfter: 1 });
+    if (entry.technologies.length) {
+      builder.add({ text: `Technologies: ${entry.technologies.join(", ")}`, font: "regular", size: 9.5, gapAfter: 1 });
+    }
+    for (const link of entry.links) {
+      builder.add({ text: link, font: "regular", size: 9.5, indent: 10 });
+    }
+    builder.add({ text: "", font: "regular", size: 5 });
+  }
+}
+
+function renderCertifications(builder: PageBuilder, document: ResumeDocument): void {
+  for (const entry of document.certifications) {
+    const heading = [entry.name, entry.issuer].filter(Boolean).join("  |  ");
+    const meta = [entry.issueDate, entry.credentialId, entry.credentialUrl].filter(Boolean).join("  |  ");
+
+    if (heading) builder.add({ text: heading, font: "bold", size: 10, gapAfter: 1 });
+    if (meta) builder.add({ text: meta, font: "regular", size: 9.5 });
+  }
+}
+
+function renderAchievements(builder: PageBuilder, document: ResumeDocument): void {
+  for (const entry of document.achievements) {
+    builder.add({ text: entry.title, font: "bold", size: 10, gapAfter: 1 });
+    if (entry.description) builder.add({ text: entry.description, font: "regular", size: 10 });
+  }
+}
+
+function renderLanguages(builder: PageBuilder, document: ResumeDocument): void {
+  builder.add({ text: document.languages.join(", "), font: "regular", size: 10 });
+}
+
+const SECTION_LABELS: Record<ResumeSectionKey, string> = {
+  summary: "Summary",
+  skills: "Skills",
+  experience: "Experience",
+  education: "Education",
+  projects: "Projects",
+  certifications: "Certifications",
+  achievements: "Achievements",
+  languages: "Languages",
+};
+
+const SECTION_HAS_CONTENT: Record<ResumeSectionKey, (document: ResumeDocument) => boolean> = {
+  summary: (document) => Boolean(document.summary),
+  skills: (document) => document.skills.length > 0,
+  experience: (document) => document.experience.length > 0,
+  education: (document) => document.education.length > 0,
+  projects: (document) => document.projects.length > 0,
+  certifications: (document) => document.certifications.length > 0,
+  achievements: (document) => document.achievements.length > 0,
+  languages: (document) => document.languages.length > 0,
+};
+
+const SECTION_RENDERERS: Record<
+  ResumeSectionKey,
+  (builder: PageBuilder, document: ResumeDocument, style: ResumeTemplateStyle) => void
+> = {
+  summary: (builder, document) => renderSummary(builder, document),
+  skills: (builder, document) => renderSkills(builder, document),
+  experience: renderExperience,
+  education: renderEducation,
+  projects: (builder, document) => renderProjects(builder, document),
+  certifications: (builder, document) => renderCertifications(builder, document),
+  achievements: (builder, document) => renderAchievements(builder, document),
+  languages: (builder, document) => renderLanguages(builder, document),
+};
 
 function buildPdf(pages: string[]): Buffer {
   const objects: string[] = [];

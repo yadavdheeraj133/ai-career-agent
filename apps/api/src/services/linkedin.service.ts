@@ -36,6 +36,8 @@ interface OAuthUser {
 export interface LinkedInAuthResult {
   user: OAuthUser;
   token: string;
+  /** True only when this authentication created a brand-new user account. */
+  isNewUser: boolean;
 }
 
 export class LinkedInService {
@@ -155,6 +157,7 @@ export class LinkedInService {
       .join(" ") || userInfo.name || "LinkedIn User";
 
     let oauthUser: OAuthUser | null = null;
+    let isNewUser = false;
 
     const existingByProvider = await authRepository.findUserByProviderId("linkedin", userInfo.sub);
 
@@ -197,6 +200,7 @@ export class LinkedInService {
           avatarUrl: userInfo.picture,
         });
         oauthUser = this.toOAuthUser(created);
+        isNewUser = true;
       }
     }
 
@@ -209,6 +213,7 @@ export class LinkedInService {
     return {
       user: oauthUser,
       token,
+      isNewUser,
     };
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -21,7 +22,10 @@ export default function LinkedInCallbackPage() {
 
     if (token) {
       setToken(token);
-      window.location.href = "/dashboard";
+      // A brand-new LinkedIn account starts Skills onboarding; an existing
+      // account goes straight to the dashboard.
+      const isNewUser = hashParams.get("new") === "1";
+      window.location.replace(isNewUser ? "/skill" : "/dashboard");
     } else {
       router.replace("/auth/login?error=missing_token");
     }
@@ -31,7 +35,9 @@ export default function LinkedInCallbackPage() {
     <main className="auth-page">
       <section className="auth-card">
         <div className="brand">
-          <div className="brand-mark">AI</div>
+          <div className="brand-mark">
+            <Image src="/logo.png" alt="AI Career Agent" width={34} height={34} />
+          </div>
           <span>Career Agent</span>
         </div>
         <div className="auth-header">

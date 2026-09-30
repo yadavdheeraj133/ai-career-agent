@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
@@ -45,7 +46,9 @@ export default function LoginPage() {
     <main className="auth-page">
       <section className="auth-card">
         <div className="brand">
-          <div className="brand-mark">AI</div>
+          <div className="brand-mark">
+            <Image src="/logo.png" alt="AI Career Agent" width={34} height={34} />
+          </div>
           <span>Career Agent</span>
         </div>
 

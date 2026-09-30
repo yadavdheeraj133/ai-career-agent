@@ -178,70 +178,61 @@ export default function DashboardPage() {
     }
   }
 
-  const topMissingSkill =
-    [...missingSkillCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ??
-    null;
+  const topMissingSkills = [...missingSkillCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([skill]) => skill);
 
-  const insights: Insight[] = [];
+  const [firstMissingSkill] = topMissingSkills;
+
+  let skillGapTitle = "Compare your skills with the market";
+  let skillGapDescription =
+    "Run a skill gap analysis to see how your profile measures up against the jobs you are matched with.";
 
   if (skillsCount === 0) {
-    insights.push({
-      type: "Profile insight",
-      title: "Add your skills to unlock matching",
-      description:
-        "Your skills power job match scores, skill gaps and tailored recommendations.",
-      action: "Add skills",
-      href: "/skill",
-      icon: "✦",
-    });
+    skillGapTitle = "Add skills to unlock your skill gap";
+    skillGapDescription =
+      "Add the skills you have so your agent can compare your profile against real job requirements.";
+  } else if (firstMissingSkill) {
+    skillGapTitle = `${firstMissingSkill} could improve your matches`;
+    skillGapDescription = `${firstMissingSkill} appears often in the jobs you are being matched with but is not on your profile yet.`;
   }
 
-  if (!summary.resume.exists) {
-    insights.push({
-      type: "Profile insight",
-      title: "Create your resume",
-      description:
-        "A resume lets the AI tailor applications and analyse how you compare to each role.",
-      action: "Open resume",
-      href: "/dashboard/resume",
-      icon: "◇",
-    });
+  let addSkillTitle = "Add your skills to your profile";
+  let addSkillDescription =
+    "Keeping your skills current helps your agent compare you with open roles and sharpen every job match.";
+
+  if (skillsCount === 0) {
+    addSkillTitle = "Start with the skills you have";
+    addSkillDescription =
+      "Your profile has no skills yet. Adding the skills you actually have powers match scores, skill gaps and tailored recommendations.";
+  } else if (firstMissingSkill) {
+    addSkillTitle = `Add ${firstMissingSkill} to your profile`;
+    addSkillDescription = `${topMissingSkills.join(", ")} ${
+      topMissingSkills.length === 1 ? "shows" : "show"
+    } up often in the jobs you match with but ${
+      topMissingSkills.length === 1 ? "is" : "are"
+    } missing from your profile. Adding relevant skills improves your match scores and the recommendations your agent makes.`;
   }
 
-  if (topMissingSkill) {
-    insights.push({
+  const insights: Insight[] = [
+    {
       type: "Skill gap",
-      title: `${topMissingSkill} could improve your matches`,
-      description: `${topMissingSkill} appears often in the jobs you are being matched with but is not on your profile yet.`,
+      title: skillGapTitle,
+      description: skillGapDescription,
       action: "Explore skill gap",
       href: "/features/resume/skill-gap",
       icon: "◇",
-    });
-  }
-
-  if (!preferences && insights.length < 3) {
-    insights.push({
-      type: "Profile insight",
-      title: "Set your job preferences",
-      description:
-        "Tell your agent your target role, location and work mode for sharper matches.",
-      action: "Open preferences",
-      href: "/dashboard/career",
-      icon: "↗",
-    });
-  }
-
-  if (insights.length === 0) {
-    insights.push({
-      type: "Market insight",
-      title: `${totalJobs} jobs are available to match`,
-      description:
-        "Your agent keeps evaluating available roles against your skills and preferences.",
-      action: "Find jobs",
-      href: "/jobs/find",
-      icon: "↗",
-    });
-  }
+    },
+    {
+      type: "Add Skill",
+      title: addSkillTitle,
+      description: addSkillDescription,
+      action: "Add Skill",
+      href: "/skill",
+      icon: "✦",
+    },
+  ];
 
   const activities: Activity[] = [];
 

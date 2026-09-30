@@ -17,16 +17,7 @@
   min-width: 0;
 }
 
-.dashboard-eyebrow {
-  margin-bottom: 7px;
 
-  color: var(--primary);
-
-  font-size: 9px;
-  font-weight: 800;
-
-  letter-spacing: 0.15em;
-}
 
 .dashboard-header h1 {
   margin: 0;
@@ -182,6 +173,13 @@
   font-weight: 700;
 
   cursor: pointer;
+}
+
+.header-notification-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
 }
 
 .header-notification-list {

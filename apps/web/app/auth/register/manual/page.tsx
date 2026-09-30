@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -23,7 +24,7 @@ export default function ManualRegisterPage() {
 
     try {
       await register(name.trim(), email.trim(), password);
-      router.replace("/dashboard/resume/upload");
+      router.replace("/skill");
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Unable to create your account."
@@ -36,7 +37,9 @@ export default function ManualRegisterPage() {
     <main className="auth-page">
       <section className="auth-card">
         <div className="brand">
-          <div className="brand-mark">AI</div>
+          <div className="brand-mark">
+            <Image src="/logo.png" alt="AI Career Agent" width={34} height={34} />
+          </div>
           <span>Career Agent</span>
         </div>
 

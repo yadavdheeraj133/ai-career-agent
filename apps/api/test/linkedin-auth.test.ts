@@ -67,7 +67,10 @@ describe("LinkedIn OAuth/OIDC authentication", () => {
     expect(redirect.search).toBe("");
     expect(redirect.hash).toMatch(/^#token=.+/);
 
-    const token = decodeURIComponent(redirect.hash.slice("#token=".length));
+    const fragment = new URLSearchParams(redirect.hash.slice(1));
+    const token = fragment.get("token")!;
+    // A brand-new account is flagged so the frontend starts Skills onboarding.
+    expect(fragment.get("new")).toBe("1");
     const currentUser = await request(app)
       .get("/auth/me")
       .set(bearer(token))
@@ -85,11 +88,18 @@ describe("LinkedIn OAuth/OIDC authentication", () => {
 
     const initiation = await request(app).get("/auth/linkedin").expect(302);
     const state = new URL(initiation.headers.location).searchParams.get("state")!;
-    await request(app)
+    const callback = await request(app)
       .get("/auth/linkedin/callback")
       .query({ code: "authorization-code", state })
       .set("Cookie", initiation.headers["set-cookie"])
       .expect(302);
+
+    // Linking an existing account is a login, not a signup: no onboarding flag.
+    const fragment = new URLSearchParams(
+      callback.headers.location.split("#")[1] ?? ""
+    );
+    expect(fragment.get("token")).toBeTruthy();
+    expect(fragment.get("new")).toBeNull();
 
     expect(await prisma.user.count()).toBe(1);
     expect(

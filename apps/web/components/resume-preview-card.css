@@ -7,64 +7,72 @@
   border-radius: 20px;
   padding: 22px 24px;
   box-shadow: 0 12px 30px rgba(47, 38, 88, 0.05);
+
+  display: flex;
+  flex-direction: column;
 }
 
 .resume-preview-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
-.resume-preview-head h2 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 820;
-  letter-spacing: -0.02em;
+.resume-preview .card-label {
+  margin-bottom: 0;
 }
 
-.resume-preview-filename {
-  margin: 4px 0 0;
+.resume-preview-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  flex: 1;
+  margin-top: 14px;
+}
+
+.resume-preview-name {
+  margin: 50px 0 0 0;
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+
+.resume-preview-introduction {
+  margin: 6px 0 0 0;
   color: var(--muted);
-  font-size: 10.5px;
-  font-weight: 600;
-  word-break: break-all;
+  font-size: 11px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(11px * 1.6 * 3);
+  width: 75%;
 }
 
 .resume-preview-badge {
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 999px;
   background: rgba(112, 87, 232, 0.1);
   color: var(--primary);
   font-size: 10px;
   font-weight: 750;
-}
-
-.resume-preview-role {
-  margin: 8px 0 0;
-  color: var(--primary);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.resume-preview-contact {
-  margin: 5px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.resume-preview-headline {
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 11px;
+  white-space: nowrap;
 }
 
 .resume-preview-actions {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-top: 14px;
 }
 
 .resume-preview-actions .primary-button,
@@ -74,13 +82,16 @@
   justify-content: center;
   gap: 8px;
   min-height: 38px;
-  padding: 0 14px;
+  padding: 0 18px;
   border-radius: 11px;
   font-size: 10.5px;
   font-weight: 750;
   text-decoration: none;
+  white-space: nowrap;
   transition: transform 0.2s, box-shadow 0.2s;
+  width:40%
 }
+
 
 .resume-preview-actions .primary-button {
   border: 0;
@@ -107,6 +118,10 @@ html[data-theme="dark"] .resume-preview {
   border-color: rgba(58, 52, 80, 0.8);
 }
 
-html[data-theme="dark"] .resume-preview-filename {
+html[data-theme="dark"] .resume-preview-name {
+  color: #f5f2ff;
+}
+
+html[data-theme="dark"] .resume-preview-introduction {
   color: #aaa5bd;
 }

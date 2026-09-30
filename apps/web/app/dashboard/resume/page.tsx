@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 
-import { ResumeViewer } from "@/components/resume-viewer";
 import { usePrimaryResume } from "@/lib/use-primary-resume";
 import "../section/dashboardSection.css";
 
@@ -13,6 +12,13 @@ const items = [
     title: "Upload Resume",
     description:
       "Upload a PDF, DOC or DOCX resume to build your career profile.",
+  },
+  {
+    href: "/dashboard/resume/generate",
+    icon: "❖",
+    title: "Generate Resume",
+    description:
+      "Build a clean, ATS-friendly resume from your saved data — no job description needed.",
   },
   {
     href: "/features/resume/analysis",
@@ -68,21 +74,24 @@ export default function ResumeSectionPage() {
           </p>
         </header>
 
-        {/* The saved resume is shown here so it is obvious what every tool
-            below is working from. */}
+        {/* A compact state only: the full resume lives behind its own view, so
+            opening this page never dumps the whole document on the user. */}
         {resume.document ? (
-          <section className="card resume-hub-current">
+          <section className="card resume-hub-current is-compact">
             <div className="resume-hub-current-head">
               <div>
                 <p className="card-label">CURRENT RESUME</p>
                 <h2>{resume.document.title}</h2>
                 <p className="resume-hub-filename">{resume.document.filename}</p>
               </div>
-              <Link href="/dashboard/resume/view" className="resume-hub-link">
-                Open full view →
+
+              <Link
+                href="/dashboard/resume/view"
+                className="primary-button resume-hub-open"
+              >
+                Open to Full View
               </Link>
             </div>
-            <ResumeViewer resume={resume.document} variant="compact" showActions={false} />
           </section>
         ) : null}
 

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { apiRequest } from "@/lib/api";
-import type { AtsGateStatus } from "@/lib/types";
 
 const suggestedSkills = [
   "JavaScript",
@@ -28,22 +28,17 @@ export default function SkillsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [gate, setGate] = useState<AtsGateStatus | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadSkills() {
       try {
-        const [skillsResponse, gateResponse] = await Promise.all([
-          apiRequest<Skill[]>("/api/skills"),
-          apiRequest<AtsGateStatus>("/resume/ats-status"),
-        ]);
+        const skillsResponse = await apiRequest<Skill[]>("/api/skills");
 
         if (cancelled) return;
 
         setSkills(skillsResponse.data);
-        setGate(gateResponse.data);
       } catch (caught) {
         if (cancelled) return;
 
@@ -116,9 +111,6 @@ export default function SkillsPage() {
 
   const hasSkills = skills.length > 0;
 
-  const gateChecked = gate !== null;
-  const gatePassed = gate?.passed === true;
-
   const filteredSuggestions = suggestedSkills.filter(
     (skill) =>
       !skills.some((item) => item.name.toLowerCase() === skill.toLowerCase()) &&
@@ -129,7 +121,9 @@ export default function SkillsPage() {
     <main className="auth-page">
       <section className="auth-card skills-card">
         <div className="brand">
-          <div className="brand-mark">AI</div>
+          <div className="brand-mark">
+            <Image src="/logo.png" alt="AI Career Agent" width={34} height={34} />
+          </div>
           <span>Career Agent</span>
         </div>
 
@@ -143,26 +137,6 @@ export default function SkillsPage() {
           </p>
         </div>
 
-        {gateChecked && !gatePassed ? (
-          <>
-            <p className="form-error">
-              {!gate?.hasResume
-                ? "Upload your resume first — the ATS check is required before adding skills."
-                : gate?.atsScore === null
-                  ? "Run the ATS check on your resume first — a passing score is required before adding skills."
-                  : `Your ATS score is ${gate?.atsScore}/100. Reach ${gate?.threshold}% to continue.`}
-            </p>
-
-            <Link
-              href="/dashboard/resume/upload"
-              className="primary-button skill-continue"
-            >
-              {!gate?.hasResume ? "Upload Resume" : "Complete ATS Check"}
-              <span>→</span>
-            </Link>
-          </>
-        ) : (
-          <>
         <div className="skill-search">
           <input
             type="text"
@@ -250,8 +224,6 @@ export default function SkillsPage() {
           Continue
           <span>→</span>
         </Link>
-          </>
-        )}
       </section>
     </main>
   );

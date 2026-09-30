@@ -1,7 +1,11 @@
 import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
-import { toResumeDocument, type ResumeDocument } from "./resume-document.service.js";
+import {
+  toResumeDocument,
+  type ResumeDocument,
+  type ResumeSectionKey,
+} from "./resume-document.service.js";
 
 /**
  * Turns uploaded PDF/DOC/DOCX bytes into the canonical `ResumeDocument`.
@@ -27,6 +31,8 @@ export interface ExtractedResumeProfile {
   currentRole: string | null;
   targetRole: string | null;
   summary: string | null;
+  /** Where each section sat in the source file, so display order can match it. */
+  sectionOrder: ResumeSectionKey[];
 }
 
 const PAGE_ARTIFACTS = /^(?:page\s+\d+(?:\s+of\s+\d+)?|\d+(?:\s*\/\s*\d+)?)$/i;
@@ -98,6 +104,8 @@ function matchesSection(line: string, names: string[]): boolean {
 interface SplitLines {
   lines: string[];
   sections: Partial<Record<SectionKey, string[]>>;
+  /** Section keys in the order the document introduced them. */
+  order: SectionKey[];
 }
 
 function splitLines(text: string): SplitLines {
@@ -111,6 +119,7 @@ function splitLines(text: string): SplitLines {
     .filter((line) => line && !PAGE_ARTIFACTS.test(line));
 
   const sections: Partial<Record<SectionKey, string[]>> = {};
+  const order: SectionKey[] = [];
   let current: SectionKey | null = null;
 
   for (const line of lines) {
@@ -118,7 +127,10 @@ function splitLines(text: string): SplitLines {
 
     if (matched) {
       current = matched;
-      sections[matched] ??= [];
+      if (!sections[matched]) {
+        sections[matched] = [];
+        order.push(matched);
+      }
       continue;
     }
 
@@ -132,7 +144,7 @@ function splitLines(text: string): SplitLines {
     }
   }
 
-  return { lines, sections };
+  return { lines, sections, order };
 }
 
 function labeled(lines: string[], labels: string[]): string | null {
@@ -230,7 +242,7 @@ function extractName(lines: string[], labeledName: string | null): string | null
 
 /** Builds the canonical document from the section split. */
 export function extractResumeDocument(text: string): ResumeDocument {
-  const { lines, sections } = splitLines(text);
+  const { lines, sections, order } = splitLines(text);
 
   const email = text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0] ?? null;
   const phone = text.match(/(?:\+?\d[\d\s().-]{7,}\d)/)?.[0]?.trim() ?? null;
@@ -259,6 +271,7 @@ export function extractResumeDocument(text: string): ResumeDocument {
       currentRole: labeled(lines, ["current role", "title", "position"]),
       targetRole: labeled(lines, ["target role", "desired role"]),
       summary,
+      sectionOrder: order,
     },
   });
 }
@@ -313,6 +326,7 @@ export function extractStructuredProfile(text: string): ExtractedResumeProfile {
     currentRole: document.currentRole,
     targetRole: document.targetRole,
     summary: document.summary || null,
+    sectionOrder: document.sectionOrder ?? [],
   };
 }
 

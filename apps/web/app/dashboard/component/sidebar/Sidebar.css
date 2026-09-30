@@ -62,6 +62,18 @@
     0 8px 22px rgba(112, 87, 232, 0.22);
 }
 
+/* The brand mark image fills the existing mark slot without distortion. */
+.sidebar-brand-mark img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  border-radius: inherit;
+}
+
 .sidebar-brand-text {
   font-size: 16px;
   font-weight: 800;
@@ -220,6 +232,61 @@
   color: var(--muted);
 
   font-size: 9px;
+}
+
+/* DARK MODE
+   The frosted white surface above is right for a light page but turns into a
+   flat grey slab once the page behind it is dark. Dark mode drops the sidebar
+   onto the existing dark background token instead — no new palette — and lifts
+   the label and item colours onto the tokens the rest of the dark UI already
+   reads from, so the rail stays legible and matches the interface. */
+
+html[data-theme="dark"] .dashboard-sidebar {
+  background: var(--background);
+
+  border-right-color: var(--border);
+}
+
+html[data-theme="dark"] .sidebar-label {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] .sidebar-item {
+  color: var(--muted);
+}
+
+html[data-theme="dark"] .sidebar-item:hover {
+  background: rgba(112, 87, 232, 0.16);
+
+  color: var(--foreground);
+}
+
+html[data-theme="dark"] .sidebar-item-active {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(112, 87, 232, 0.3),
+      rgba(112, 87, 232, 0.12)
+    );
+
+  color: #947eff;
+}
+
+html[data-theme="dark"] .sidebar-item-active .sidebar-icon {
+  background: rgba(112, 87, 232, 0.18);
+}
+
+html[data-theme="dark"] .sidebar-bottom {
+  border-top-color: var(--border);
+}
+
+html[data-theme="dark"] .sidebar-agent-status {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(112, 87, 232, 0.16),
+      rgba(79, 213, 208, 0.1)
+    );
 }
 
 @media (max-width: 900px) {
